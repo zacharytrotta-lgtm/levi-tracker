@@ -3,118 +3,124 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Levi's Development Tracker</title>
+<title>Levi's Log</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#1e1e1e;color:#d0d0d0;min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden}
+body{font-family:'Nunito',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0a1628;color:#e8edf5;min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden}
 
 /* Tab bar */
-.tab-bar{display:flex;background:#2d2d2d;border-top:1px solid #3a3a3a;position:fixed;bottom:0;left:0;right:0;z-index:100;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tab-bar{display:flex;background:#0f1f3d;border-top:2px solid #1a3a6a;position:fixed;bottom:0;left:0;right:0;z-index:100;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .tab-bar::-webkit-scrollbar{display:none}
-.tab-btn{flex:0 0 auto;padding:10px 8px;text-align:center;font-size:10px;font-weight:600;color:#888;background:none;border:none;cursor:pointer;transition:color .2s;min-width:52px}
-.tab-btn.active{color:#7c4dff;border-top:2px solid #7c4dff}
-.tab-icon{font-size:16px;display:block;margin-bottom:2px}
+.tab-btn{flex:0 0 auto;padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#5a8abf;background:none;border:none;cursor:pointer;transition:color .2s;min-width:52px}
+.tab-btn.active{color:#4fc3f7;border-top:3px solid #4fc3f7}
+.tab-icon{font-size:18px;display:block;margin-bottom:2px}
 
 /* Pages */
 .page{display:none;padding:12px 12px 80px 12px;flex:1}
 .page.active{display:block}
 
+/* Hero header */
+.hero{text-align:center;padding:16px 12px 8px;margin-bottom:8px}
+.hero-title{font-size:28px;font-weight:900;letter-spacing:2px;background:linear-gradient(135deg,#4fc3f7,#29b6f6,#81d4fa,#4dd0e1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-shadow:none}
+.hero-icons{font-size:22px;letter-spacing:6px;margin-top:4px}
+.hero-sub{font-size:11px;color:#5a8abf;margin-top:4px;letter-spacing:1px}
+
 /* Cards */
-.card{background:#2d2d2d;border-radius:10px;padding:14px;margin-bottom:10px}
+.card{background:#112240;border-radius:12px;padding:14px;margin-bottom:10px;border:1px solid #1a3a6a}
 .card-title{font-weight:700;font-size:15px;margin-bottom:4px}
-.card-sub{font-size:12px;color:#888}
+.card-sub{font-size:12px;color:#5a8abf}
 
-/* Category colors */
-.cat-speech{border-left:4px solid #e74c3c}
-.cat-reading{border-left:4px solid #3498db}
-.cat-behavior{border-left:4px solid #f39c12}
-.cat-selfcare{border-left:4px solid #2ecc71}
-.cat-academics{border-left:4px solid #9b59b6}
-.cat-social{border-left:4px solid #e67e22}
+/* Category colors — brighter for kids */
+.cat-speech{border-left:4px solid #ff6b6b}
+.cat-reading{border-left:4px solid #4fc3f7}
+.cat-behavior{border-left:4px solid #ffd54f}
+.cat-selfcare{border-left:4px solid #69f0ae}
+.cat-academics{border-left:4px solid #ce93d8}
+.cat-social{border-left:4px solid #ffab40}
 
-.color-speech{color:#e74c3c}.color-reading{color:#3498db}.color-behavior{color:#f39c12}
-.color-selfcare{color:#2ecc71}.color-academics{color:#9b59b6}.color-social{color:#e67e22}
+.color-speech{color:#ff6b6b}.color-reading{color:#4fc3f7}.color-behavior{color:#ffd54f}
+.color-selfcare{color:#69f0ae}.color-academics{color:#ce93d8}.color-social{color:#ffab40}
 
-.bg-speech{background:#3a1a1a}.bg-reading{background:#1a2a3a}.bg-behavior{background:#3a3520}
-.bg-selfcare{background:#1e3528}.bg-academics{background:#2a1a3a}.bg-social{background:#3a2a1a}
+.bg-speech{background:#2a1525}.bg-reading{background:#0d2137}.bg-behavior{background:#2a2510}
+.bg-selfcare{background:#0d2a1f}.bg-academics{background:#1f1530}.bg-social{background:#2a1f10}
 
 /* Buttons */
-.btn{padding:10px 16px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:background .2s}
-.btn-primary{background:#7c4dff;color:#fff}.btn-primary:hover{background:#6a3de8}
-.btn-secondary{background:#3a3a3a;color:#d0d0d0}.btn-secondary:hover{background:#4a4a4a}
-.btn-danger{background:#5a1a1a;color:#e74c3c}.btn-danger:hover{background:#7a2a2a}
+.btn{padding:10px 16px;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg,#29b6f6,#4fc3f7);color:#0a1628}.btn-primary:hover{background:linear-gradient(135deg,#0288d1,#29b6f6)}
+.btn-secondary{background:#1a3a6a;color:#81d4fa}.btn-secondary:hover{background:#234a7a}
+.btn-danger{background:#3a1525;color:#ff6b6b}.btn-danger:hover{background:#4a2535}
 .btn-sm{padding:6px 10px;font-size:11px}
 .btn-block{display:block;width:100%;margin-top:8px}
 
 /* Forms */
-input,select,textarea{background:#252525;border:1px solid #444;border-radius:6px;padding:10px;color:#d0d0d0;font-size:14px;width:100%}
-input:focus,select:focus,textarea:focus{outline:none;border-color:#7c4dff}
-label{display:block;font-size:12px;color:#888;margin:8px 0 4px}
+input,select,textarea{background:#0d1f3a;border:1px solid #1a3a6a;border-radius:8px;padding:10px;color:#e8edf5;font-size:14px;width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#4fc3f7;box-shadow:0 0 0 2px rgba(79,195,247,.2)}
+label{display:block;font-size:12px;color:#5a8abf;margin:8px 0 4px}
 textarea{resize:vertical;min-height:60px}
 
 /* Chips */
 .chip-row{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
-.chip{display:inline-block;padding:6px 12px;border-radius:14px;font-size:12px;cursor:pointer;border:1px solid #444;transition:all .2s;user-select:none}
-.chip.on{border-color:#7c4dff;background:#7c4dff;color:#fff}
-.chip-speech.on{background:#e74c3c;border-color:#e74c3c}
-.chip-reading.on{background:#3498db;border-color:#3498db}
-.chip-behavior.on{background:#f39c12;border-color:#f39c12}
-.chip-selfcare.on{background:#2ecc71;border-color:#2ecc71}
-.chip-academics.on{background:#9b59b6;border-color:#9b59b6}
-.chip-social.on{background:#e67e22;border-color:#e67e22}
+.chip{display:inline-block;padding:6px 12px;border-radius:14px;font-size:12px;cursor:pointer;border:1px solid #1a3a6a;transition:all .2s;user-select:none;color:#81d4fa}
+.chip.on{border-color:#4fc3f7;background:#4fc3f7;color:#0a1628}
+.chip-speech.on{background:#ff6b6b;border-color:#ff6b6b;color:#fff}
+.chip-reading.on{background:#4fc3f7;border-color:#4fc3f7;color:#0a1628}
+.chip-behavior.on{background:#ffd54f;border-color:#ffd54f;color:#0a1628}
+.chip-selfcare.on{background:#69f0ae;border-color:#69f0ae;color:#0a1628}
+.chip-academics.on{background:#ce93d8;border-color:#ce93d8;color:#0a1628}
+.chip-social.on{background:#ffab40;border-color:#ffab40;color:#0a1628}
 
 /* Modal */
-.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;padding:16px}
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(5,10,25,.85);z-index:200;align-items:center;justify-content:center;padding:16px}
 .modal-overlay.show{display:flex}
-.modal{background:#2d2d2d;border-radius:12px;padding:20px;width:100%;max-width:400px;max-height:85vh;overflow-y:auto}
-.modal h3{margin-bottom:12px;color:#7c4dff}
+.modal{background:#112240;border:1px solid #1a3a6a;border-radius:14px;padding:20px;width:100%;max-width:400px;max-height:85vh;overflow-y:auto}
+.modal h3{margin-bottom:12px;color:#4fc3f7}
 
 /* Toast */
-.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#2ecc71;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:300;opacity:0;transition:opacity .3s}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#69f0ae;color:#0a1628;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:700;z-index:300;opacity:0;transition:opacity .3s}
 .toast.show{opacity:1}
-.toast.error{background:#e74c3c}
+.toast.error{background:#ff6b6b;color:#fff}
 
 /* Entry cards in daily log */
-.log-entry{background:#2d2d2d;border-radius:10px;padding:12px;margin-bottom:8px;cursor:pointer;transition:background .2s}
-.log-entry:hover{background:#353535}
+.log-entry{background:#112240;border:1px solid #1a3a6a;border-radius:12px;padding:12px;margin-bottom:8px;cursor:pointer;transition:all .2s}
+.log-entry:hover{background:#152a4a;border-color:#29b6f6}
 .log-date{font-weight:700;font-size:14px;margin-bottom:4px}
 .log-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
 .log-tag{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600}
 
 /* Category section within log form */
-.cat-section{border-radius:8px;padding:12px;margin-bottom:10px;display:none}
+.cat-section{border-radius:10px;padding:12px;margin-bottom:10px;display:none}
 .cat-section.visible{display:block}
 .cat-section h4{font-size:13px;font-weight:700;margin-bottom:8px}
 
 /* Goal items */
-.goal-item{background:#252525;border-radius:8px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:flex-start;gap:10px}
-.goal-item input[type=checkbox]{width:auto;margin-top:3px;accent-color:#7c4dff}
+.goal-item{background:#0d1f3a;border-radius:10px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:flex-start;gap:10px;border:1px solid #1a3a6a}
+.goal-item input[type=checkbox]{width:auto;margin-top:3px;accent-color:#4fc3f7}
 .goal-text{flex:1}
 .goal-title{font-size:13px;font-weight:600}
-.goal-desc{font-size:11px;color:#888;margin-top:2px}
-.goal-item.done .goal-title{text-decoration:line-through;color:#666}
+.goal-desc{font-size:11px;color:#5a8abf;margin-top:2px}
+.goal-item.done .goal-title{text-decoration:line-through;color:#3a5a8a}
 .goal-progress{display:flex;align-items:center;gap:6px;margin-top:4px}
-.goal-bar{flex:1;height:5px;background:#3a3a3a;border-radius:3px;overflow:hidden}
+.goal-bar{flex:1;height:5px;background:#1a3a6a;border-radius:3px;overflow:hidden}
 .goal-bar-fill{height:100%;border-radius:3px;transition:width .3s}
-.goal-notes{font-size:11px;color:#999;margin-top:4px}
+.goal-notes{font-size:11px;color:#5a8abf;margin-top:4px}
 
 /* History items in category tabs */
-.hist-item{background:#252525;border-radius:6px;padding:8px 10px;margin-bottom:6px}
-.hist-date{font-size:10px;color:#888;margin-bottom:2px}
+.hist-item{background:#0d1f3a;border-radius:8px;padding:8px 10px;margin-bottom:6px;border:1px solid #1a3a6a}
+.hist-date{font-size:10px;color:#5a8abf;margin-bottom:2px}
 .hist-text{font-size:13px}
 .hist-mood{font-size:11px;margin-top:4px}
 
 /* Insights */
 .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px}
-.stat-card{background:#2d2d2d;border-radius:10px;padding:14px;text-align:center}
-.stat-val{font-size:24px;font-weight:700;color:#7c4dff}
-.stat-lbl{font-size:11px;color:#888;margin-top:2px}
+.stat-card{background:#112240;border:1px solid #1a3a6a;border-radius:12px;padding:14px;text-align:center}
+.stat-val{font-size:24px;font-weight:900;color:#4fc3f7}
+.stat-lbl{font-size:11px;color:#5a8abf;margin-top:2px}
 
-.streak-bar{background:#2d2d2d;border-radius:10px;padding:14px;margin-bottom:10px}
-.streak-title{font-size:13px;font-weight:600;margin-bottom:8px}
+.streak-bar{background:#112240;border:1px solid #1a3a6a;border-radius:12px;padding:14px;margin-bottom:10px}
+.streak-title{font-size:13px;font-weight:700;margin-bottom:8px;color:#81d4fa}
 .streak-dots{display:flex;gap:3px;flex-wrap:wrap}
-.streak-dot{width:18px;height:18px;border-radius:4px;background:#3a3a3a}
-.streak-dot.hit{background:#7c4dff}
+.streak-dot{width:18px;height:18px;border-radius:4px;background:#1a3a6a;position:relative}
+.streak-dot.hit{background:#4fc3f7}
 .streak-dot.today{border:2px solid #fff}
 
 /* Section headers */
@@ -122,11 +128,11 @@ textarea{resize:vertical;min-height:60px}
 .section-header h3{font-size:16px}
 
 /* IO bar */
-.io-bar{position:fixed;bottom:52px;left:0;right:0;z-index:99;background:#252525;border-top:1px solid #444;display:flex;gap:6px;padding:6px 12px;justify-content:center}
+.io-bar{position:fixed;bottom:52px;left:0;right:0;z-index:99;background:#0d1f3a;border-top:1px solid #1a3a6a;display:flex;gap:6px;padding:6px 12px;justify-content:center}
 .tab-bar{height:50px}
 
 /* Empty state */
-.empty{text-align:center;padding:40px 20px;color:#666}
+.empty{text-align:center;padding:40px 20px;color:#3a5a8a}
 .empty-icon{font-size:40px;margin-bottom:10px}
 .empty-text{font-size:14px}
 
@@ -136,8 +142,8 @@ textarea{resize:vertical;min-height:60px}
 
 /* Rating stars */
 .rating{display:flex;gap:4px;margin:4px 0}
-.star{font-size:20px;cursor:pointer;color:#444;transition:color .2s}
-.star.on{color:#f39c12}
+.star{font-size:20px;cursor:pointer;color:#1a3a6a;transition:color .2s}
+.star.on{color:#ffd54f}
 
 /* Expandable */
 .expandable .expand-content{display:none}
@@ -148,6 +154,7 @@ textarea{resize:vertical;min-height:60px}
   .tab-btn{min-width:70px}
 }
 </style>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -169,7 +176,13 @@ textarea{resize:vertical;min-height:60px}
 
 <!-- Dashboard / Home -->
 <div id="pg-log" class="page active">
-  <button class="btn btn-primary btn-block" id="btn-new-entry" style="font-size:15px;padding:14px;margin-bottom:14px">+ Log Tonight</button>
+  <div class="hero">
+    <div class="hero-icons">⚡ 🐢 🍄 🚀 🎮</div>
+    <div class="hero-title">LEVI'S LOG</div>
+    <div class="hero-sub">ADVENTURE TRACKER</div>
+  </div>
+  <div id="dash-scores"></div>
+  <button class="btn btn-primary btn-block" id="btn-new-entry" style="font-size:15px;padding:14px;margin-bottom:14px;border-radius:12px;letter-spacing:1px">+ Log Tonight</button>
   <div id="dash-alerts"></div>
   <div id="dash-stats"></div>
   <div id="dash-streak"></div>
@@ -188,6 +201,7 @@ textarea{resize:vertical;min-height:60px}
 <div id="pg-reading" class="page">
   <h3 style="margin-bottom:12px" class="color-reading">Reading</h3>
   <div id="reading-goals"></div>
+  <div id="reading-insights"></div>
   <div class="section-header" style="margin-top:16px"><h4>History</h4></div>
   <div id="reading-history"></div>
 </div>
@@ -203,6 +217,7 @@ textarea{resize:vertical;min-height:60px}
 <div id="pg-selfcare" class="page">
   <h3 style="margin-bottom:12px" class="color-selfcare">Self-Care</h3>
   <div id="selfcare-goals"></div>
+  <div id="selfcare-insights"></div>
   <div class="section-header" style="margin-top:16px"><h4>History</h4></div>
   <div id="selfcare-history"></div>
 </div>
@@ -238,12 +253,12 @@ function daysAgo(d){return Math.floor((new Date()-new Date(d+'T12:00:00'))/(8640
 
 // ── Categories ──
 const CATS=[
-  {id:'speech',name:'Speech & Language',color:'#e74c3c',icon:'🗣'},
-  {id:'reading',name:'Reading',color:'#3498db',icon:'📚'},
-  {id:'behavior',name:'Behavior & Discipline',color:'#f39c12',icon:'⭐'},
-  {id:'selfcare',name:'Self-Care',color:'#2ecc71',icon:'🧹'},
-  {id:'academics',name:'Academics',color:'#9b59b6',icon:'🔢'},
-  {id:'social',name:'Social',color:'#e67e22',icon:'👫'}
+  {id:'speech',name:'Speech & Language',color:'#ff6b6b',icon:'🗣'},
+  {id:'reading',name:'Reading',color:'#4fc3f7',icon:'📚'},
+  {id:'behavior',name:'Behavior & Discipline',color:'#ffd54f',icon:'⭐'},
+  {id:'selfcare',name:'Self-Care',color:'#69f0ae',icon:'🧹'},
+  {id:'academics',name:'Academics',color:'#ce93d8',icon:'🔢'},
+  {id:'social',name:'Social',color:'#ffab40',icon:'👫'}
 ];
 function catById(id){return CATS.find(c=>c.id===id)}
 
@@ -331,6 +346,32 @@ function renderTab(tab){
 
 // ── Dashboard ──
 function renderDashboard(){
+  // Score boxes — last 30 days best-day counts
+  const now30=new Date();
+  const positiveSCTags=new Set(['Wiped well','Dressed self','Brushed teeth well','Washed hands unprompted','Bath/shower independent']);
+  let readingScore=0,behaviorScore=0,selfcareScore=0;
+  for(let i=29;i>=0;i--){
+    const dt=new Date(now30);dt.setDate(dt.getDate()-i);
+    const ds=dt.toISOString().slice(0,10);
+    S.entries.forEach(e=>{
+      if(e.date!==ds)return;
+      e.items.forEach(it=>{
+        if(it.cat==='reading'){
+          const bks=it.books&&it.books.length?it.books:(it.book?[it.book]:[]);
+          if(bks.length>=2)readingScore++;
+        }
+        if(it.cat==='behavior'&&it.mood==='great')behaviorScore++;
+        if(it.cat==='selfcare'&&it.tags&&it.tags.length&&it.tags.every(t=>positiveSCTags.has(t)))selfcareScore++;
+      });
+    });
+  }
+  document.getElementById('dash-scores').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+      <div class="stat-card" style="border:2px solid #ffd54f;cursor:pointer" onclick="document.querySelector('[data-tab=reading]').click()"><div style="font-size:28px">📖</div><div class="stat-val" style="color:#ffd54f;font-size:28px">${readingScore}/10</div><div class="stat-lbl">2+ Books</div></div>
+      <div class="stat-card" style="border:2px solid #69f0ae;cursor:pointer" onclick="document.querySelector('[data-tab=behavior]').click()"><div style="font-size:28px">⭐</div><div class="stat-val" style="color:#69f0ae;font-size:28px">${behaviorScore}/10</div><div class="stat-lbl">Great Days</div></div>
+      <div class="stat-card" style="border:2px solid #69f0ae;cursor:pointer" onclick="document.querySelector('[data-tab=selfcare]').click()"><div style="font-size:28px">💪</div><div class="stat-val" style="color:#69f0ae;font-size:28px">${selfcareScore}/10</div><div class="stat-lbl">Independent</div></div>
+    </div>`;
+
   const alertsEl=document.getElementById('dash-alerts');
   let alertsHtml='';
 
@@ -344,13 +385,13 @@ function renderDashboard(){
       return `<div class="goal-item card cat-${g.cat}" onclick="viewGoal('${g.id}')" style="margin-bottom:4px">
         <div class="goal-text">
           <div style="font-size:11px;color:${cat.color};font-weight:600">${cat.icon} ${cat.name}</div>
-          <div class="goal-title"><span style="color:#7c4dff">⚑</span> ${esc(g.title)}</div>
-          <div style="font-size:10px;color:#888;margin-top:2px">${noteInfo}</div>
+          <div class="goal-title"><span style="color:#4fc3f7">⚑</span> ${esc(g.title)}</div>
+          <div style="font-size:10px;color:#5a8abf;margin-top:2px">${noteInfo}</div>
         </div>
       </div>`;
     });
     alertsHtml+=`<div style="margin-bottom:14px">
-      <div style="font-size:12px;font-weight:700;color:#7c4dff;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">⚑ Priority (${flagged.length})</div>
+      <div style="font-size:12px;font-weight:700;color:#4fc3f7;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">⚑ Priority (${flagged.length})</div>
       ${flagCards.join('')}
     </div>`;
   }
@@ -366,7 +407,7 @@ function renderDashboard(){
         <div class="goal-text">
           <div style="font-size:11px;color:${cat.color};font-weight:600">${cat.icon} ${cat.name}</div>
           <div class="goal-title">${esc(g.title)}</div>
-          <div style="font-size:10px;color:#f39c12;margin-top:2px">Last update: ${ago}</div>
+          <div style="font-size:10px;color:#ffd54f;margin-top:2px">Last update: ${ago}</div>
         </div>
       </div>`;
     });
@@ -374,7 +415,7 @@ function renderDashboard(){
   }
 
   if(!flagged.length&&!dueGoals.length&&S.goals.filter(g=>g.status==='active').length){
-    alertsHtml='<div class="card" style="margin-bottom:14px;text-align:center;color:#2ecc71;font-size:13px;font-weight:600">All caught up ✓</div>';
+    alertsHtml='<div class="card" style="margin-bottom:14px;text-align:center;color:#69f0ae;font-size:13px;font-weight:600">All caught up ✓</div>';
   }
 
   alertsEl.innerHTML=alertsHtml;
@@ -385,50 +426,70 @@ function renderDashboard(){
     if(t)t.textContent='collapse';
   }
 
-  // Stats
-  const totalEntries=S.entries.length;
+  // Stats — active goals, logging streak, categories active this week
   const activeGoals=S.goals.filter(g=>g.status==='active').length;
   const completedGoals=S.goals.filter(g=>g.status==='done').length;
-
-  // Reading streak
-  const readingDates=new Set();
-  S.entries.forEach(e=>{if(e.items.some(i=>i.cat==='reading'))readingDates.add(e.date)});
-  let readStreak=0;
-  let d=new Date();
-  while(true){
-    const ds=d.toISOString().slice(0,10);
-    if(readingDates.has(ds)){readStreak++;d.setDate(d.getDate()-1)}
-    else break;
-  }
-
-  // Books
-  const books=new Set();
-  S.entries.forEach(e=>e.items.forEach(i=>{if(i.book)books.add(i.book)}));
+  let logStreak=0;
+  {let d=new Date();while(true){const ds=d.toISOString().slice(0,10);if(S.entries.some(e=>e.date===ds)){logStreak++;d.setDate(d.getDate()-1)}else break}}
+  const last7=new Set();
+  {const now=new Date();for(let i=0;i<7;i++){const dt=new Date(now);dt.setDate(dt.getDate()-i);const ds=dt.toISOString().slice(0,10);S.entries.filter(e=>e.date===ds).forEach(e=>e.items.forEach(it=>last7.add(it.cat)))}}
 
   document.getElementById('dash-stats').innerHTML=`
     <div class="stat-grid" style="margin-bottom:14px">
-      <div class="stat-card"><div class="stat-val">${totalEntries}</div><div class="stat-lbl">Entries</div></div>
-      <div class="stat-card"><div class="stat-val">${readStreak}</div><div class="stat-lbl">Reading Streak</div></div>
-      <div class="stat-card"><div class="stat-val">${books.size}</div><div class="stat-lbl">Books</div></div>
-      <div class="stat-card"><div class="stat-val">${completedGoals}/${completedGoals+activeGoals}</div><div class="stat-lbl">Goals Done</div></div>
+      <div class="stat-card"><div class="stat-val">${logStreak}</div><div class="stat-lbl">Day Streak</div></div>
+      <div class="stat-card"><div class="stat-val">${last7.size}/6</div><div class="stat-lbl">Active This Week</div></div>
+      <div class="stat-card"><div class="stat-val">${activeGoals}</div><div class="stat-lbl">Active Goals</div></div>
+      <div class="stat-card"><div class="stat-val">${completedGoals}</div><div class="stat-lbl">Completed</div></div>
     </div>`;
 
-  // 30-day streak
+  // 30-day category activity grid — each day shows which cats were logged, click to expand
   const last30=[];
   const now=new Date();
+  const entriesByDate={};
+  S.entries.forEach(e=>{entriesByDate[e.date]=e});
   for(let i=29;i>=0;i--){
-    const dt=new Date(now);
-    dt.setDate(dt.getDate()-i);
+    const dt=new Date(now);dt.setDate(dt.getDate()-i);
     const ds=dt.toISOString().slice(0,10);
-    const hasEntry=S.entries.some(e=>e.date===ds);
-    last30.push({date:ds,hit:hasEntry,isToday:i===0});
+    const entry=entriesByDate[ds];
+    const cats=entry?[...new Set(entry.items.map(it=>it.cat))]:[];
+    last30.push({date:ds,cats,entryId:entry?entry.id:null,isToday:i===0});
   }
+  const catColors={speech:'#ff6b6b',reading:'#4fc3f7',behavior:'#ffd54f',selfcare:'#69f0ae',academics:'#ce93d8',social:'#ffab40'};
+  const allCatIds=['speech','reading','behavior','selfcare','academics','social'];
+
+  // Build stacked bars — 3 rows of 10
+  const barHeight=48;
+  const rows=[[],[],[]];
+  last30.forEach((x,i)=>rows[Math.floor(i/10)].push(x));
+
+  const rowsHtml=rows.map(row=>{
+    const bars=row.map(x=>{
+      const dayNum=new Date(x.date+'T12:00:00').getDate();
+      const click=x.entryId?`onclick="viewEntry('${x.entryId}')"`:''
+      const cursor=x.entryId?'pointer':'default';
+      if(!x.cats.length){
+        return `<div style="display:flex;flex-direction:column;align-items:center;gap:1px;cursor:${cursor}" ${click} title="${x.date} — no entry">
+          <div style="width:100%;height:${barHeight}px;background:#1a3a6a;border-radius:3px${x.isToday?';border:2px solid #fff':''}"></div>
+          <span style="font-size:8px;color:#3a5a8a">${dayNum}</span>
+        </div>`;
+      }
+      const segH=Math.floor(barHeight/x.cats.length);
+      const segs=x.cats.map(c=>`<div style="width:100%;height:${segH}px;background:${catColors[c]}"></div>`).join('');
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:1px;cursor:${cursor}" ${click} title="${x.date} — ${x.cats.join(', ')}">
+        <div style="width:100%;height:${barHeight}px;border-radius:3px;overflow:hidden;display:flex;flex-direction:column${x.isToday?';border:2px solid #fff':''}">${segs}</div>
+        <span style="font-size:8px;color:#6a9fd8">${dayNum}</span>
+      </div>`;
+    }).join('');
+    return `<div style="display:grid;grid-template-columns:repeat(10,1fr);gap:3px;margin-bottom:4px">${bars}</div>`;
+  }).join('');
+
+  const catLegend=CATS.map(c=>`<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;color:#5a8abf"><span style="width:10px;height:10px;border-radius:2px;background:${c.color};display:inline-block"></span>${c.icon} ${c.name}</span>`).join(' ');
+
   document.getElementById('dash-streak').innerHTML=`
     <div class="streak-bar" style="margin-bottom:14px">
       <div class="streak-title">Last 30 Days</div>
-      <div class="streak-dots">
-        ${last30.map(x=>`<div class="streak-dot${x.hit?' hit':''}${x.isToday?' today':''}" title="${x.date}"></div>`).join('')}
-      </div>
+      ${rowsHtml}
+      <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">${catLegend}</div>
     </div>`;
 
   // Behavior trend
@@ -462,12 +523,13 @@ function renderDashboard(){
       const parts=[];
       if(i.tags&&i.tags.length)parts.push(i.tags.join(', '));
       if(i.text)parts.push(i.text);
-      if(i.book)parts.push('📖 '+i.book);
+      if(i.books&&i.books.length)parts.push('📖 '+i.books.join(', '));
+      else if(i.book)parts.push('📖 '+i.book);
       return esc(parts.join(' — '))||esc(i.mood||'');
     }).join(' · ');
     return `<div class="log-entry" onclick="viewEntry('${e.id}')">
       <div class="log-date">${fmtDate(e.date)}</div>
-      <div style="font-size:12px;color:#999;margin-top:2px">${esc(itemPreview)}${e.items.length>3?' ...':''}</div>
+      <div style="font-size:12px;color:#6a9fd8;margin-top:2px">${esc(itemPreview)}${e.items.length>3?' ...':''}</div>
       <div class="log-tags">${tags}</div>
     </div>`;
   });
@@ -485,17 +547,17 @@ function viewEntry(id){
   if(!e)return;
   const items=e.items.map(i=>{
     const cat=catById(i.cat);
-    const tagHtml=i.tags&&i.tags.length?`<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px">${i.tags.map(t=>`<span style="font-size:10px;background:#3a3a3a;padding:2px 6px;border-radius:4px">${esc(t)}</span>`).join('')}</div>`:'';
+    const tagHtml=i.tags&&i.tags.length?`<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px">${i.tags.map(t=>`<span style="font-size:10px;background:#1a3a6a;padding:2px 6px;border-radius:4px">${esc(t)}</span>`).join('')}</div>`:'';
     return `<div class="card cat-${i.cat}" style="margin-bottom:6px">
       <div style="font-size:11px;font-weight:600;margin-bottom:4px" class="color-${i.cat}">${cat.icon} ${cat.name}</div>
       ${tagHtml}
       ${i.text?`<div style="font-size:13px;margin-top:4px">${esc(i.text)}</div>`:''}
-      ${i.book?`<div style="font-size:11px;color:#888;margin-top:4px">📖 ${esc(i.book)}</div>`:''}
+      ${i.books&&i.books.length?`<div style="font-size:11px;color:#4fc3f7;margin-top:4px">${i.books.map(b=>'📖 '+esc(b)).join(' · ')}</div>`:(i.book?`<div style="font-size:11px;color:#5a8abf;margin-top:4px">📖 ${esc(i.book)}</div>`:'')}
       ${i.mood?`<div style="font-size:11px;margin-top:4px">${moodEmoji(i.mood)} ${i.mood}</div>`:''}
     </div>`;
   }).join('');
   showModal(`<h3>${fmtDate(e.date)}</h3>
-    ${e.summary?`<div style="font-size:13px;color:#999;margin-bottom:12px">${esc(e.summary)}</div>`:''}
+    ${e.summary?`<div style="font-size:13px;color:#6a9fd8;margin-bottom:12px">${esc(e.summary)}</div>`:''}
     ${items}
     <div style="display:flex;gap:6px;margin-top:12px">
       <button class="btn btn-sm btn-secondary" style="flex:1" onclick="editEntry('${e.id}')">Edit</button>
@@ -519,8 +581,20 @@ document.getElementById('btn-new-entry').addEventListener('click',()=>openEntryF
 
 function getPastBooks(){
   const books=[];
-  S.entries.forEach(e=>e.items.forEach(i=>{if(i.book&&!books.includes(i.book))books.push(i.book)}));
+  S.entries.forEach(e=>e.items.forEach(i=>{
+    if(i.books&&i.books.length){i.books.forEach(b=>{if(b&&!books.includes(b))books.push(b)})}
+    else if(i.book&&!books.includes(i.book))books.push(i.book);
+  }));
   return books;
+}
+
+function getBookCounts(){
+  const counts={};
+  S.entries.forEach(e=>e.items.forEach(i=>{
+    if(i.books&&i.books.length){i.books.forEach(b=>{if(b)counts[b]=(counts[b]||0)+1})}
+    else if(i.book){counts[i.book]=(counts[i.book]||0)+1}
+  }));
+  return Object.entries(counts).sort((a,b)=>b[1]-a[1]);
 }
 
 function buildQuickTags(catId,existingTags){
@@ -551,11 +625,18 @@ function openEntryForm(existing){
     const item=e.items.find(i=>i.cat===c.id)||{};
     const existingTags=item.tags||[];
 
-    // Reading: book field with datalist autocomplete
+    // Reading: multi-book support with autocomplete
     let extra='';
     if(c.id==='reading'){
-      extra=`<label>Book title</label>
-        <input type="text" class="cat-book" data-cat="${c.id}" value="${esc(item.book||'')}" placeholder="What did you read?" list="book-list" autocomplete="off">
+      const existingBooks=item.books||( item.book?[item.book]:[]);
+      extra=`<label>Books read tonight</label>
+        <div class="books-list" data-cat="${c.id}">
+          ${existingBooks.map(b=>`<div class="book-chip" style="display:inline-flex;align-items:center;gap:4px;background:#1a2a3a;color:#4fc3f7;padding:4px 8px;border-radius:6px;margin:2px;font-size:12px"><span>${esc(b)}</span><span class="book-remove" style="cursor:pointer;color:#ff6b6b" onclick="this.parentElement.remove()">✕</span></div>`).join('')}
+        </div>
+        <div style="display:flex;gap:4px;margin-top:4px">
+          <input type="text" class="cat-book-input" data-cat="${c.id}" placeholder="Book title..." list="book-list" autocomplete="off" style="font-size:12px;padding:6px">
+          <button class="btn btn-sm btn-secondary book-add-btn" data-cat="${c.id}" style="white-space:nowrap">+ Book</button>
+        </div>
         <datalist id="book-list">${pastBooks.map(b=>`<option value="${esc(b)}">`).join('')}</datalist>`;
     }
 
@@ -628,6 +709,24 @@ function openEntryForm(existing){
     });
   });
 
+  // Book add buttons
+  document.querySelectorAll('.book-add-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const cat=btn.dataset.cat;
+      const input=document.querySelector(`.cat-book-input[data-cat="${cat}"]`);
+      const val=input.value.trim();
+      if(!val)return;
+      const list=document.querySelector(`.books-list[data-cat="${cat}"]`);
+      const chip=document.createElement('div');
+      chip.className='book-chip';
+      chip.style.cssText='display:inline-flex;align-items:center;gap:4px;background:#1a2a3a;color:#4fc3f7;padding:4px 8px;border-radius:6px;margin:2px;font-size:12px';
+      chip.innerHTML=`<span>${esc(val)}</span><span class="book-remove" style="cursor:pointer;color:#ff6b6b" onclick="this.parentElement.remove()">✕</span>`;
+      list.appendChild(chip);
+      input.value='';
+      input.focus();
+    });
+  });
+
   // Mood chips
   document.querySelectorAll('.rating-row').forEach(row=>{
     row.querySelectorAll('.chip').forEach(chip=>{
@@ -647,16 +746,18 @@ function openEntryForm(existing){
     document.querySelectorAll('#cat-chips .chip.on').forEach(chip=>{
       const cat=chip.dataset.cat;
       const notes=document.querySelector(`.cat-notes[data-cat="${cat}"]`).value.trim();
-      const bookEl=document.querySelector(`.cat-book[data-cat="${cat}"]`);
-      const book=bookEl?bookEl.value.trim():'';
+      // Multi-book support
+      const booksList=document.querySelector(`.books-list[data-cat="${cat}"]`);
+      const books=[];
+      if(booksList){booksList.querySelectorAll('.book-chip span:first-child').forEach(s=>books.push(s.textContent.trim()))}
       const moodRow=document.querySelector(`.rating-row[data-cat="${cat}"]`);
       const moodChip=moodRow?moodRow.querySelector('.chip.on'):null;
       const mood=moodChip?moodChip.dataset.mood:'';
       // Gather selected quick tags
       const tags=[];
       document.querySelectorAll(`.qt-row[data-cat="${cat}"] .chip.on`).forEach(tc=>tags.push(tc.dataset.tag));
-      if(notes||book||mood||tags.length){
-        items.push({cat,text:notes,book,mood,tags});
+      if(notes||books.length||mood||tags.length){
+        items.push({cat,text:notes,books,mood,tags});
       }
     });
 
@@ -683,8 +784,10 @@ function editEntry(id){
 
 // ── Category Pages ──
 function renderCategory(cat){
+  if(cat==='reading')renderReadingInsights();
+  if(cat==='behavior')renderBehaviorInsights();
+  if(cat==='selfcare')renderSelfcareInsights();
   renderGoals(cat);
-  if(cat==='behavior')renderBehaviorInsights(cat);
   renderHistory(cat);
 }
 
@@ -695,10 +798,10 @@ function renderGoalCard(g,cat){
   const isDone=g.status==='done';
   return `<div class="goal-item card cat-${cat}${isDone?' done':''}" onclick="viewGoal('${g.id}')" style="${isDone?'opacity:.5':''}">
     <div class="goal-text">
-      <div class="goal-title">${g.flagged?'<span style="color:#7c4dff">⚑ </span>':''}${esc(g.title)}${due?' <span style="color:#f39c12;font-size:10px;font-weight:700">● NEEDS UPDATE</span>':''}</div>
+      <div class="goal-title">${g.flagged?'<span style="color:#4fc3f7">⚑ </span>':''}${esc(g.title)}${due?' <span style="color:#ffd54f;font-size:10px;font-weight:700">● NEEDS UPDATE</span>':''}</div>
       ${!isDone?`<div class="goal-desc">${esc(g.desc)}</div>`:''}
       ${lastNote&&!isDone?`<div class="goal-notes">Latest: ${esc(lastNote.text)} (${fmtDate(lastNote.date)})</div>`:''}
-      ${noteCount&&!isDone?`<div style="font-size:10px;color:#666;margin-top:2px">${noteCount} note${noteCount>1?'s':''}${g.reminder&&g.reminder!=='none'?' · remind '+g.reminder:''}</div>`:''}
+      ${noteCount&&!isDone?`<div style="font-size:10px;color:#3a5a8a;margin-top:2px">${noteCount} note${noteCount>1?'s':''}${g.reminder&&g.reminder!=='none'?' · remind '+g.reminder:''}</div>`:''}
     </div>
   </div>`;
 }
@@ -710,8 +813,8 @@ function renderCollapsible(id,title,items,defaultShow){
   const needsExpand=count>show;
   return `<div class="collapsible-section" id="sec-${id}">
     <div style="display:flex;justify-content:space-between;align-items:center;margin:12px 0 6px;cursor:pointer" onclick="toggleSection('${id}')">
-      <span style="font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px">${title} (${count})</span>
-      ${needsExpand?'<span style="font-size:11px;color:#7c4dff" id="sec-toggle-'+id+'">show all</span>':''}
+      <span style="font-size:12px;font-weight:700;color:#5a8abf;text-transform:uppercase;letter-spacing:1px">${title} (${count})</span>
+      ${needsExpand?'<span style="font-size:11px;color:#4fc3f7" id="sec-toggle-'+id+'">show all</span>':''}
     </div>
     <div class="sec-items" id="sec-items-${id}">
       ${items.slice(0,show).join('')}
@@ -778,7 +881,7 @@ function renderGoals(cat){
 
 function renderBehaviorInsights(){
   const el=document.getElementById('behavior-insights');
-  const moodColors={great:'#2ecc71',good:'#7c4dff',okay:'#888',rough:'#f39c12',tough:'#e74c3c'};
+  const moodColors={great:'#69f0ae',good:'#4fc3f7',okay:'#5a8abf',rough:'#ffd54f',tough:'#ff6b6b'};
 
   // Build 30-day mood grid
   const last30=[];
@@ -807,37 +910,228 @@ function renderBehaviorInsights(){
   });
   const sortedTags=Object.entries(tagCounts).sort((a,b)=>b[1]-a[1]);
 
-  const dots=last30.map(d=>{
-    const color=d.mood?moodColors[d.mood]||'#3a3a3a':'#3a3a3a';
-    const tagList=d.tags.length?d.tags.join(', '):'';
-    const title=d.date+(d.mood?' — '+d.mood:'')+(tagList?' ('+tagList+')':'');
-    return `<div class="streak-dot${d.isToday?' today':''}" style="background:${color}" title="${esc(title)}"></div>`;
+  // Build stacked bars — 3 rows of 10
+  const barH=48;
+  const rows=[[],[],[]];
+  last30.forEach((x,i)=>rows[Math.floor(i/10)].push(x));
+
+  const rowsHtml=rows.map(row=>{
+    const bars=row.map(x=>{
+      const dayNum=new Date(x.date+'T12:00:00').getDate();
+      const color=x.mood?moodColors[x.mood]||'#1a3a6a':'#1a3a6a';
+      const tagList=x.tags.length?x.tags.join(', '):'';
+      const title=x.date+(x.mood?' — '+x.mood:'')+(tagList?' ('+tagList+')':'');
+      const isBest=x.mood==='great';
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:1px" title="${esc(title)}">
+        <div style="width:100%;height:${barH}px;background:${color};border-radius:4px;display:flex;align-items:center;justify-content:center${x.isToday?';border:2px solid #fff':''}">
+          ${isBest?'<span style="font-size:16px">⭐</span>':''}
+        </div>
+        <span style="font-size:8px;color:#5a8abf">${dayNum}</span>
+      </div>`;
+    }).join('');
+    return `<div style="display:grid;grid-template-columns:repeat(10,1fr);gap:3px;margin-bottom:4px">${bars}</div>`;
   }).join('');
 
   const legend=['great','good','okay','rough','tough'].map(m=>
-    `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;color:#888"><span style="width:10px;height:10px;border-radius:2px;background:${moodColors[m]};display:inline-block"></span>${m}</span>`
+    `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;color:#5a8abf"><span style="width:10px;height:10px;border-radius:2px;background:${moodColors[m]};display:inline-block"></span>${m==='great'?'⭐ great':m}</span>`
   ).join(' ');
 
   let tagSummary='';
   if(sortedTags.length){
     tagSummary=`<div style="margin-top:10px">
-      <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:6px">Top issues (last 30 days)</div>
+      <div style="font-size:11px;color:#5a8abf;font-weight:600;margin-bottom:6px">Top issues (last 30 days)</div>
       ${sortedTags.map(([tag,count])=>{
         const pct=Math.round(count/30*100);
         return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
           <span style="font-size:12px;min-width:120px">${esc(tag)}</span>
-          <div style="flex:1;height:6px;background:#3a3a3a;border-radius:3px;overflow:hidden">
-            <div style="width:${pct}%;height:100%;background:#f39c12;border-radius:3px"></div>
+          <div style="flex:1;height:6px;background:#1a3a6a;border-radius:3px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;background:#ffd54f;border-radius:3px"></div>
           </div>
-          <span style="font-size:11px;color:#888;min-width:20px;text-align:right">${count}</span>
+          <span style="font-size:11px;color:#5a8abf;min-width:20px;text-align:right">${count}</span>
         </div>`;
       }).join('')}
     </div>`;
   }
 
+  const greatCount=last30.filter(d=>d.mood==='great').length;
   el.innerHTML=`<div class="streak-bar" style="margin:14px 0">
-    <div class="streak-title">Last 30 Days — Mood</div>
-    <div class="streak-dots">${dots}</div>
+    <div class="streak-title" style="display:flex;justify-content:space-between;align-items:center">Last 30 Days — Mood <span style="font-size:18px;font-weight:900;color:#69f0ae">⭐ ${greatCount}/10</span></div>
+    ${rowsHtml}
+    <div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap">${legend}</div>
+    ${tagSummary}
+  </div>`;
+}
+
+function renderReadingInsights(){
+  const el=document.getElementById('reading-insights');
+
+  // Reading streak
+  const readingDates=new Set();
+  S.entries.forEach(e=>{if(e.items.some(i=>i.cat==='reading'))readingDates.add(e.date)});
+  let readStreak=0;
+  {let d=new Date();while(true){const ds=d.toISOString().slice(0,10);if(readingDates.has(ds)){readStreak++;d.setDate(d.getDate()-1)}else break}}
+
+  // Total unique books
+  const allBooks=getPastBooks();
+
+  // 30-day reading grid — gray=no reading, blue=1 book, gold=2+ books
+  const last30=[];
+  const now=new Date();
+  const booksByDate={};
+  S.entries.forEach(e=>{
+    e.items.forEach(i=>{
+      if(i.cat==='reading'){
+        const bks=i.books&&i.books.length?i.books:(i.book?[i.book]:[]);
+        booksByDate[e.date]=(booksByDate[e.date]||[]).concat(bks);
+      }
+    });
+  });
+  for(let i=29;i>=0;i--){
+    const dt=new Date(now);dt.setDate(dt.getDate()-i);
+    const ds=dt.toISOString().slice(0,10);
+    const bks=booksByDate[ds]||[];
+    last30.push({date:ds,count:bks.length,books:bks,isToday:i===0});
+  }
+
+  // Build stacked bars — 3 rows of 10
+  const barH=48;
+  const rRows=[[],[],[]];
+  last30.forEach((x,i)=>rRows[Math.floor(i/10)].push(x));
+
+  const readingRowsHtml=rRows.map(row=>{
+    const bars=row.map(x=>{
+      const dayNum=new Date(x.date+'T12:00:00').getDate();
+      const color=x.count>=2?'#ffd54f':x.count===1?'#4fc3f7':'#1a3a6a';
+      const title=x.date+(x.count?` — ${x.count} book${x.count>1?'s':''}: ${x.books.join(', ')}`:'');
+      const isBest=x.count>=2;
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:1px" title="${esc(title)}">
+        <div style="width:100%;height:${barH}px;background:${color};border-radius:4px;display:flex;align-items:center;justify-content:center${x.isToday?';border:2px solid #fff':''}">
+          ${isBest?'<span style="font-size:16px">📖</span>':''}
+        </div>
+        <span style="font-size:8px;color:#5a8abf">${dayNum}</span>
+      </div>`;
+    }).join('');
+    return `<div style="display:grid;grid-template-columns:repeat(10,1fr);gap:3px;margin-bottom:4px">${bars}</div>`;
+  }).join('');
+
+  const legend=`<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;color:#5a8abf"><span style="width:10px;height:10px;border-radius:2px;background:#4fc3f7;display:inline-block"></span>1 book</span>
+    <span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;color:#5a8abf"><span style="width:10px;height:10px;border-radius:2px;background:#ffd54f;display:inline-block"></span>📖 2+ books</span>`;
+
+  // Favorites list — books read most often
+  const bookCounts=getBookCounts();
+  let favHtml='';
+  if(bookCounts.length){
+    const favItems=bookCounts.slice(0,10).map(([book,count],idx)=>{
+      const bar=Math.round(count/bookCounts[0][1]*100);
+      return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <span style="font-size:12px;color:#4fc3f7;min-width:16px;text-align:right;font-weight:600">${idx+1}.</span>
+        <span style="font-size:12px;min-width:120px;flex:1">${esc(book)}</span>
+        <div style="width:60px;height:6px;background:#1a3a6a;border-radius:3px;overflow:hidden">
+          <div style="width:${bar}%;height:100%;background:#4fc3f7;border-radius:3px"></div>
+        </div>
+        <span style="font-size:11px;color:#5a8abf;min-width:24px;text-align:right">${count}x</span>
+      </div>`;
+    }).join('');
+    favHtml=`<div style="margin-top:10px">
+      <div style="font-size:11px;color:#5a8abf;font-weight:600;margin-bottom:6px">Favorites</div>
+      ${favItems}
+    </div>`;
+  }
+
+  el.innerHTML=`
+    <div class="stat-grid" style="margin-bottom:10px">
+      <div class="stat-card"><div class="stat-val">${readStreak}</div><div class="stat-lbl">Night Streak</div></div>
+      <div class="stat-card"><div class="stat-val">${allBooks.length}</div><div class="stat-lbl">Unique Books</div></div>
+    </div>
+    <div class="streak-bar" style="margin-bottom:14px">
+      <div class="streak-title" style="display:flex;justify-content:space-between;align-items:center">Last 30 Nights <span style="font-size:18px;font-weight:900;color:#ffd54f">📖 ${last30.filter(d=>d.count>=2).length}/10</span></div>
+      ${readingRowsHtml}
+      <div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap">${legend}</div>
+      ${favHtml}
+    </div>`;
+}
+
+function renderSelfcareInsights(){
+  const el=document.getElementById('selfcare-insights');
+
+  // 30-day selfcare grid
+  const last30=[];
+  const now=new Date();
+  const selfcareByDate={};
+  S.entries.forEach(e=>{
+    e.items.forEach(i=>{
+      if(i.cat==='selfcare'){
+        selfcareByDate[e.date]={tags:i.tags||[],text:i.text||''};
+      }
+    });
+  });
+
+  for(let i=29;i>=0;i--){
+    const dt=new Date(now);dt.setDate(dt.getDate()-i);
+    const ds=dt.toISOString().slice(0,10);
+    const entry=selfcareByDate[ds];
+    last30.push({date:ds,tags:entry?entry.tags:[],logged:!!entry,isToday:i===0});
+  }
+
+  // Tag frequency
+  const tagCounts={};
+  last30.forEach(d=>d.tags.forEach(t=>{tagCounts[t]=(tagCounts[t]||0)+1}));
+  const sortedTags=Object.entries(tagCounts).sort((a,b)=>b[1]-a[1]);
+
+  // Positive vs needs-help tags
+  const positiveTags=new Set(['Wiped well','Dressed self','Brushed teeth well','Washed hands unprompted','Bath/shower independent']);
+  let posCount=0,helpCount=0;
+  last30.forEach(d=>d.tags.forEach(t=>{
+    if(positiveTags.has(t))posCount++;else helpCount++;
+  }));
+
+  // Build stacked bars — 3 rows of 10
+  const barH=48;
+  const scRows=[[],[],[]];
+  last30.forEach((x,i)=>scRows[Math.floor(i/10)].push(x));
+
+  const scRowsHtml=scRows.map(row=>{
+    const bars=row.map(x=>{
+      const dayNum=new Date(x.date+'T12:00:00').getDate();
+      const allPositive=x.logged&&x.tags.length&&x.tags.every(t=>positiveTags.has(t));
+      const hasPositive=x.tags.some(t=>positiveTags.has(t));
+      const color=x.logged?(hasPositive?'#69f0ae':'#ffd54f'):'#1a3a6a';
+      const title=x.date+(x.tags.length?' — '+x.tags.join(', '):'');
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:1px" title="${esc(title)}">
+        <div style="width:100%;height:${barH}px;background:${color};border-radius:4px;display:flex;align-items:center;justify-content:center${x.isToday?';border:2px solid #fff':''}">
+          ${allPositive?'<span style="font-size:16px">💪</span>':''}
+        </div>
+        <span style="font-size:8px;color:#5a8abf">${dayNum}</span>
+      </div>`;
+    }).join('');
+    return `<div style="display:grid;grid-template-columns:repeat(10,1fr);gap:3px;margin-bottom:4px">${bars}</div>`;
+  }).join('');
+
+  const legend=`<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;color:#5a8abf"><span style="width:10px;height:10px;border-radius:2px;background:#69f0ae;display:inline-block"></span>💪 Independent</span>
+    <span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;color:#5a8abf"><span style="width:10px;height:10px;border-radius:2px;background:#ffd54f;display:inline-block"></span>Needed help</span>`;
+
+  let tagSummary='';
+  if(sortedTags.length){
+    tagSummary=`<div style="margin-top:10px">
+      <div style="font-size:11px;color:#5a8abf;font-weight:600;margin-bottom:6px">Tag frequency (last 30 days)</div>
+      ${sortedTags.map(([tag,count])=>{
+        const pct=Math.round(count/30*100);
+        const isPos=positiveTags.has(tag);
+        return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span style="font-size:12px;min-width:160px">${esc(tag)}</span>
+          <div style="flex:1;height:6px;background:#1a3a6a;border-radius:3px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;background:${isPos?'#69f0ae':'#ffd54f'};border-radius:3px"></div>
+          </div>
+          <span style="font-size:11px;color:#5a8abf;min-width:20px;text-align:right">${count}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  const indepCount=last30.filter(d=>d.logged&&d.tags.length&&d.tags.every(t=>positiveTags.has(t))).length;
+  el.innerHTML=`<div class="streak-bar" style="margin-bottom:14px">
+    <div class="streak-title" style="display:flex;justify-content:space-between;align-items:center">Last 30 Days — Self-Care <span style="font-size:18px;font-weight:900;color:#69f0ae">💪 ${indepCount}/10</span></div>
+    ${scRowsHtml}
     <div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap">${legend}</div>
     ${tagSummary}
   </div>`;
@@ -859,12 +1153,12 @@ function renderHistory(cat){
   }
 
   const histCards=items.map(i=>{
-    const tagHtml=i.tags&&i.tags.length?`<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:3px">${i.tags.map(t=>`<span style="font-size:10px;background:#3a3a3a;padding:2px 6px;border-radius:4px">${esc(t)}</span>`).join('')}</div>`:'';
+    const tagHtml=i.tags&&i.tags.length?`<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:3px">${i.tags.map(t=>`<span style="font-size:10px;background:#1a3a6a;padding:2px 6px;border-radius:4px">${esc(t)}</span>`).join('')}</div>`:'';
     return `<div class="hist-item">
     <div class="hist-date">${fmtDate(i.date)}</div>
     ${tagHtml}
     ${i.text?`<div class="hist-text">${esc(i.text)}</div>`:''}
-    ${i.book?`<div style="font-size:11px;color:#3498db;margin-top:2px">📖 ${esc(i.book)}</div>`:''}
+    ${i.books&&i.books.length?`<div style="font-size:11px;color:#4fc3f7;margin-top:2px">${i.books.map(b=>'📖 '+esc(b)).join(' · ')}</div>`:(i.book?`<div style="font-size:11px;color:#4fc3f7;margin-top:2px">📖 ${esc(i.book)}</div>`:'')}
     ${i.mood?`<div class="hist-mood">${moodEmoji(i.mood)} ${i.mood}</div>`:''}
   </div>`;
   });
@@ -891,9 +1185,9 @@ function viewGoal(id){
   const due=isReminderDue(g);
 
   showModal(`<h3 class="color-${g.cat}">${cat.icon} ${esc(g.title)}</h3>
-    <div style="font-size:13px;color:#999;margin-bottom:8px">${esc(g.desc)}</div>
+    <div style="font-size:13px;color:#6a9fd8;margin-bottom:8px">${esc(g.desc)}</div>
     <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
-      <span style="font-size:10px;padding:3px 8px;border-radius:10px;background:#252525;color:#888">${tierLabel}</span>
+      <span style="font-size:10px;padding:3px 8px;border-radius:10px;background:#0d1f3a;color:#5a8abf">${tierLabel}</span>
       <span style="font-size:10px;padding:3px 8px;border-radius:10px;background:${due?'#3a2a10':'#252525'};color:${due?'#f39c12':'#888'}">${due?'● ':''} ${reminderLabel}</span>
     </div>
     <div style="display:flex;gap:6px;margin-bottom:12px">
@@ -906,7 +1200,7 @@ function viewGoal(id){
       <button class="btn btn-sm btn-primary" onclick="addGoalNote('${g.id}')">Add</button>
     </div>
     <div style="margin-top:12px">
-      ${notes.length?notes.map(n=>`<div class="hist-item"><div class="hist-date">${fmtDate(n.date)}</div><div class="hist-text">${esc(n.text)}</div></div>`).join(''):'<div style="font-size:12px;color:#666">No notes yet.</div>'}
+      ${notes.length?notes.map(n=>`<div class="hist-item"><div class="hist-date">${fmtDate(n.date)}</div><div class="hist-text">${esc(n.text)}</div></div>`).join(''):'<div style="font-size:12px;color:#3a5a8a">No notes yet.</div>'}
     </div>
     <div style="display:flex;gap:6px;margin-top:12px">
       <button class="btn btn-sm btn-secondary" style="flex:1" onclick="editGoalPrompt('${g.id}')">Edit</button>
