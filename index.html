@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Levi's Development Tracker</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#1e1e1e;color:#d0d0d0;min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden}
+
+/* Tab bar */
+.tab-bar{display:flex;background:#2d2d2d;border-top:1px solid #3a3a3a;position:fixed;bottom:0;left:0;right:0;z-index:100;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tab-bar::-webkit-scrollbar{display:none}
+.tab-btn{flex:0 0 auto;padding:10px 8px;text-align:center;font-size:10px;font-weight:600;color:#888;background:none;border:none;cursor:pointer;transition:color .2s;min-width:52px}
+.tab-btn.active{color:#7c4dff;border-top:2px solid #7c4dff}
+.tab-icon{font-size:16px;display:block;margin-bottom:2px}
+
+/* Pages */
+.page{display:none;padding:12px 12px 80px 12px;flex:1}
+.page.active{display:block}
+
+/* Cards */
+.card{background:#2d2d2d;border-radius:10px;padding:14px;margin-bottom:10px}
+.card-title{font-weight:700;font-size:15px;margin-bottom:4px}
+.card-sub{font-size:12px;color:#888}
+
+/* Category colors */
+.cat-speech{border-left:4px solid #e74c3c}
+.cat-reading{border-left:4px solid #3498db}
+.cat-behavior{border-left:4px solid #f39c12}
+.cat-selfcare{border-left:4px solid #2ecc71}
+.cat-academics{border-left:4px solid #9b59b6}
+.cat-social{border-left:4px solid #e67e22}
+
+.color-speech{color:#e74c3c}.color-reading{color:#3498db}.color-behavior{color:#f39c12}
+.color-selfcare{color:#2ecc71}.color-academics{color:#9b59b6}.color-social{color:#e67e22}
+
+.bg-speech{background:#3a1a1a}.bg-reading{background:#1a2a3a}.bg-behavior{background:#3a3520}
+.bg-selfcare{background:#1e3528}.bg-academics{background:#2a1a3a}.bg-social{background:#3a2a1a}
+
+/* Buttons */
+.btn{padding:10px 16px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:background .2s}
+.btn-primary{background:#7c4dff;color:#fff}.btn-primary:hover{background:#6a3de8}
+.btn-secondary{background:#3a3a3a;color:#d0d0d0}.btn-secondary:hover{background:#4a4a4a}
+.btn-danger{background:#5a1a1a;color:#e74c3c}.btn-danger:hover{background:#7a2a2a}
+.btn-sm{padding:6px 10px;font-size:11px}
+.btn-block{display:block;width:100%;margin-top:8px}
+
+/* Forms */
+input,select,textarea{background:#252525;border:1px solid #444;border-radius:6px;padding:10px;color:#d0d0d0;font-size:14px;width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#7c4dff}
+label{display:block;font-size:12px;color:#888;margin:8px 0 4px}
+textarea{resize:vertical;min-height:60px}
+
+/* Chips */
+.chip-row{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.chip{display:inline-block;padding:6px 12px;border-radius:14px;font-size:12px;cursor:pointer;border:1px solid #444;transition:all .2s;user-select:none}
+.chip.on{border-color:#7c4dff;background:#7c4dff;color:#fff}
+.chip-speech.on{background:#e74c3c;border-color:#e74c3c}
+.chip-reading.on{background:#3498db;border-color:#3498db}
+.chip-behavior.on{background:#f39c12;border-color:#f39c12}
+.chip-selfcare.on{background:#2ecc71;border-color:#2ecc71}
+.chip-academics.on{background:#9b59b6;border-color:#9b59b6}
+.chip-social.on{background:#e67e22;border-color:#e67e22}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.show{display:flex}
+.modal{background:#2d2d2d;border-radius:12px;padding:20px;width:100%;max-width:400px;max-height:85vh;overflow-y:auto}
+.modal h3{margin-bottom:12px;color:#7c4dff}
+
+/* Toast */
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#2ecc71;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;z-index:300;opacity:0;transition:opacity .3s}
+.toast.show{opacity:1}
+.toast.error{background:#e74c3c}
+
+/* Entry cards in daily log */
+.log-entry{background:#2d2d2d;border-radius:10px;padding:12px;margin-bottom:8px;cursor:pointer;transition:background .2s}
+.log-entry:hover{background:#353535}
+.log-date{font-weight:700;font-size:14px;margin-bottom:4px}
+.log-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.log-tag{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600}
+
+/* Category section within log form */
+.cat-section{border-radius:8px;padding:12px;margin-bottom:10px;display:none}
+.cat-section.visible{display:block}
+.cat-section h4{font-size:13px;font-weight:700;margin-bottom:8px}
+
+/* Goal items */
+.goal-item{background:#252525;border-radius:8px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:flex-start;gap:10px}
+.goal-item input[type=checkbox]{width:auto;margin-top:3px;accent-color:#7c4dff}
+.goal-text{flex:1}
+.goal-title{font-size:13px;font-weight:600}
+.goal-desc{font-size:11px;color:#888;margin-top:2px}
+.goal-item.done .goal-title{text-decoration:line-through;color:#666}
+.goal-progress{display:flex;align-items:center;gap:6px;margin-top:4px}
+.goal-bar{flex:1;height:5px;background:#3a3a3a;border-radius:3px;overflow:hidden}
+.goal-bar-fill{height:100%;border-radius:3px;transition:width .3s}
+.goal-notes{font-size:11px;color:#999;margin-top:4px}
+
+/* History items in category tabs */
+.hist-item{background:#252525;border-radius:6px;padding:8px 10px;margin-bottom:6px}
+.hist-date{font-size:10px;color:#888;margin-bottom:2px}
+.hist-text{font-size:13px}
+.hist-mood{font-size:11px;margin-top:4px}
+
+/* Insights */
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px}
+.stat-card{background:#2d2d2d;border-radius:10px;padding:14px;text-align:center}
+.stat-val{font-size:24px;font-weight:700;color:#7c4dff}
+.stat-lbl{font-size:11px;color:#888;margin-top:2px}
+
+.streak-bar{background:#2d2d2d;border-radius:10px;padding:14px;margin-bottom:10px}
+.streak-title{font-size:13px;font-weight:600;margin-bottom:8px}
+.streak-dots{display:flex;gap:3px;flex-wrap:wrap}
+.streak-dot{width:18px;height:18px;border-radius:4px;background:#3a3a3a}
+.streak-dot.hit{background:#7c4dff}
+.streak-dot.today{border:2px solid #fff}
+
+/* Section headers */
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.section-header h3{font-size:16px}
+
+/* IO bar */
+.io-bar{position:fixed;bottom:52px;left:0;right:0;z-index:99;background:#252525;border-top:1px solid #444;display:flex;gap:6px;padding:6px 12px;justify-content:center}
+.tab-bar{height:50px}
+
+/* Empty state */
+.empty{text-align:center;padding:40px 20px;color:#666}
+.empty-icon{font-size:40px;margin-bottom:10px}
+.empty-text{font-size:14px}
+
+/* Quick add row */
+.quick-add{display:flex;gap:6px;margin-bottom:10px}
+.quick-add input{flex:1}
+
+/* Rating stars */
+.rating{display:flex;gap:4px;margin:4px 0}
+.star{font-size:20px;cursor:pointer;color:#444;transition:color .2s}
+.star.on{color:#f39c12}
+
+/* Expandable */
+.expandable .expand-content{display:none}
+.expandable.open .expand-content{display:block}
+
+@media(min-width:600px){
+  .stat-grid{grid-template-columns:repeat(4,1fr)}
+  .tab-btn{min-width:70px}
+}
+</style>
+</head>
+<body>
+
+<div class="io-bar">
+  <button class="btn btn-sm btn-secondary" id="btn-export">EXPORT</button>
+  <button class="btn btn-sm btn-secondary" id="btn-import">IMPORT</button>
+  <input type="file" id="import-file" accept=".json" style="display:none">
+</div>
+
+<div class="tab-bar" id="tab-bar">
+  <button class="tab-btn active" data-tab="log"><span class="tab-icon">📝</span>Log</button>
+  <button class="tab-btn" data-tab="speech"><span class="tab-icon">🗣</span>Speech</button>
+  <button class="tab-btn" data-tab="reading"><span class="tab-icon">📚</span>Reading</button>
+  <button class="tab-btn" data-tab="behavior"><span class="tab-icon">⭐</span>Behavior</button>
+  <button class="tab-btn" data-tab="selfcare"><span class="tab-icon">🧹</span>Self-Care</button>
+  <button class="tab-btn" data-tab="academics"><span class="tab-icon">🔢</span>Academics</button>
+  <button class="tab-btn" data-tab="social"><span class="tab-icon">👫</span>Social</button>
+  <button class="tab-btn" data-tab="insights"><span class="tab-icon">📊</span>Insights</button>
+</div>
+
+<!-- Daily Log -->
+<div id="pg-log" class="page active">
+  <div class="section-header">
+    <h3>Daily Log</h3>
+    <button class="btn btn-sm btn-primary" id="btn-new-entry">+ New Entry</button>
+  </div>
+  <div id="log-list"></div>
+</div>
+
+<!-- Category pages -->
+<div id="pg-speech" class="page">
+  <h3 style="margin-bottom:12px" class="color-speech">Speech & Language</h3>
+  <div id="speech-goals"></div>
+  <div class="section-header" style="margin-top:16px"><h4>History</h4></div>
+  <div id="speech-history"></div>
+</div>
+
+<div id="pg-reading" class="page">
+  <h3 style="margin-bottom:12px" class="color-reading">Reading</h3>
+  <div id="reading-goals"></div>
+  <div class="section-header" style="margin-top:16px"><h4>History</h4></div>
+  <div id="reading-history"></div>
+</div>
+
+<div id="pg-behavior" class="page">
+  <h3 style="margin-bottom:12px" class="color-behavior">Behavior & Discipline</h3>
+  <div id="behavior-goals"></div>
+  <div class="section-header" style="margin-top:16px"><h4>History</h4></div>
+  <div id="behavior-history"></div>
+</div>
+
+<div id="pg-selfcare" class="page">
+  <h3 style="margin-bottom:12px" class="color-selfcare">Self-Care</h3>
+  <div id="selfcare-goals"></div>
+  <div class="section-header" style="margin-top:16px"><h4>History</h4></div>
+  <div id="selfcare-history"></div>
+</div>
+
+<div id="pg-academics" class="page">
+  <h3 style="margin-bottom:12px" class="color-academics">Academics</h3>
+  <div id="academics-goals"></div>
+  <div class="section-header" style="margin-top:16px"><h4>History</h4></div>
+  <div id="academics-history"></div>
+</div>
+
+<div id="pg-social" class="page">
+  <h3 style="margin-bottom:12px" class="color-social">Social</h3>
+  <div id="social-goals"></div>
+  <div class="section-header" style="margin-top:16px"><h4>History</h4></div>
+  <div id="social-history"></div>
+</div>
+
+<!-- Insights -->
+<div id="pg-insights" class="page">
+  <h3 style="margin-bottom:12px">Insights</h3>
+  <div id="insights-content"></div>
+</div>
+
+<!-- Modal -->
+<div id="modal-overlay" class="modal-overlay"><div id="modal-content" class="modal"></div></div>
+<div id="toast-el" class="toast"></div>
+
+<script>
+// ── Helpers ──
+let _uid=0;
+function uid(){return Date.now().toString(36)+'_'+(++_uid)}
+function esc(s){if(!s)return '';const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function toast(msg,err){const t=document.getElementById('toast-el');t.textContent=msg;t.className='toast'+(err?' error':'')+' show';setTimeout(()=>t.className='toast',2500)}
+function today(){return new Date().toISOString().slice(0,10)}
+function fmtDate(d){if(!d)return '';const dt=new Date(d+'T12:00:00');return dt.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}
+function daysAgo(d){return Math.floor((new Date()-new Date(d+'T12:00:00'))/(86400000))}
+
+// ── Categories ──
+const CATS=[
+  {id:'speech',name:'Speech & Language',color:'#e74c3c',icon:'🗣'},
+  {id:'reading',name:'Reading',color:'#3498db',icon:'📚'},
+  {id:'behavior',name:'Behavior & Discipline',color:'#f39c12',icon:'⭐'},
+  {id:'selfcare',name:'Self-Care',color:'#2ecc71',icon:'🧹'},
+  {id:'academics',name:'Academics',color:'#9b59b6',icon:'🔢'},
+  {id:'social',name:'Social',color:'#e67e22',icon:'👫'}
+];
+function catById(id){return CATS.find(c=>c.id===id)}
+
+// ── State ──
+const DEFAULT_STATE={
+  entries:[],
+  goals:[
+    // Speech
+    {id:uid(),cat:'speech',title:'Clear "th" sounds',desc:'Says "the/that/this" instead of "da/dat/dis"',status:'active',notes:[]},
+    {id:uid(),cat:'speech',title:'Clear "r" sounds',desc:'Pronounces R clearly in words like "red", "car", "brother"',status:'active',notes:[]},
+    {id:uid(),cat:'speech',title:'Clear "l" sounds',desc:'Pronounces L clearly in words like "Levi", "like", "ball"',status:'active',notes:[]},
+    {id:uid(),cat:'speech',title:'Multi-syllable words',desc:'Says longer words clearly without dropping syllables',status:'active',notes:[]},
+    // Reading
+    {id:uid(),cat:'reading',title:'Recognize alphabet letters',desc:'Can identify all 26 uppercase and lowercase letters',status:'active',notes:[]},
+    {id:uid(),cat:'reading',title:'Letter sounds',desc:'Knows the sound each letter makes',status:'active',notes:[]},
+    {id:uid(),cat:'reading',title:'Sight words',desc:'Recognizes common kindergarten sight words (the, and, is, it, etc.)',status:'active',notes:[]},
+    {id:uid(),cat:'reading',title:'Nightly reading habit',desc:'Consistent bedtime reading sessions',status:'active',notes:[]},
+    // Behavior
+    {id:uid(),cat:'behavior',title:'Tantrum management',desc:'Reducing frequency and intensity of tantrums, learning to express frustration with words',status:'active',notes:[]},
+    {id:uid(),cat:'behavior',title:'Listening first time',desc:'Follows instructions without needing to be asked multiple times',status:'active',notes:[]},
+    {id:uid(),cat:'behavior',title:'Patience / waiting',desc:'Can wait his turn, handle short delays without meltdowns',status:'active',notes:[]},
+    // Self-Care
+    {id:uid(),cat:'selfcare',title:'Wiping independently',desc:'Can wipe consistently and properly after using the bathroom',status:'active',notes:[]},
+    {id:uid(),cat:'selfcare',title:'Dressing independently',desc:'Picks out clothes and dresses himself including buttons/zippers',status:'active',notes:[]},
+    {id:uid(),cat:'selfcare',title:'Teeth brushing',desc:'Brushes teeth properly with minimal supervision',status:'active',notes:[]},
+    {id:uid(),cat:'selfcare',title:'Hand washing',desc:'Washes hands thoroughly without reminders after bathroom and before meals',status:'active',notes:[]},
+    // Academics
+    {id:uid(),cat:'academics',title:'Count to 20',desc:'Counts objects accurately up to 20',status:'active',notes:[]},
+    {id:uid(),cat:'academics',title:'Number recognition',desc:'Recognizes written numbers 0-20',status:'active',notes:[]},
+    {id:uid(),cat:'academics',title:'Basic shapes',desc:'Identifies and names circle, square, triangle, rectangle, star, diamond',status:'active',notes:[]},
+    {id:uid(),cat:'academics',title:'Colors',desc:'Names all basic colors accurately',status:'active',notes:[]},
+    {id:uid(),cat:'academics',title:'Write his name',desc:'Can write "Levi" legibly',status:'active',notes:[]},
+    // Social
+    {id:uid(),cat:'social',title:'Sharing with others',desc:'Shares toys and takes turns without major conflicts',status:'active',notes:[]},
+    {id:uid(),cat:'social',title:'City adjustment',desc:'Comfortable in the neighborhood, feels at home in Canton',status:'active',notes:[]},
+    {id:uid(),cat:'social',title:'Kindergarten readiness',desc:'Ready for classroom environment — sitting still, following group instructions, interacting with peers',status:'active',notes:[]}
+  ]
+};
+
+let S;
+function loadState(){
+  try{const raw=localStorage.getItem('levi_dev');if(raw){S=JSON.parse(raw);if(!S.goals)S.goals=DEFAULT_STATE.goals;if(!S.entries)S.entries=[];}else{S=JSON.parse(JSON.stringify(DEFAULT_STATE))}}
+  catch(e){S=JSON.parse(JSON.stringify(DEFAULT_STATE))}
+}
+function saveState(){localStorage.setItem('levi_dev',JSON.stringify(S))}
+
+// ── Tab navigation ──
+function initTabs(){
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      const tab=btn.dataset.tab;
+      document.getElementById('pg-'+tab).classList.add('active');
+      renderTab(tab);
+    });
+  });
+}
+
+function renderTab(tab){
+  if(tab==='log') renderLog();
+  else if(tab==='insights') renderInsights();
+  else renderCategory(tab);
+}
+
+// ── Daily Log ──
+function renderLog(){
+  const el=document.getElementById('log-list');
+  const sorted=[...S.entries].sort((a,b)=>b.date.localeCompare(a.date));
+  if(!sorted.length){
+    el.innerHTML='<div class="empty"><div class="empty-icon">📝</div><div class="empty-text">No entries yet. Tap + New Entry to log tonight.</div></div>';
+    return;
+  }
+  el.innerHTML=sorted.map(e=>{
+    const cats=[...new Set(e.items.map(i=>i.cat))];
+    const tags=cats.map(c=>{const cat=catById(c);return `<span class="log-tag bg-${c}" style="color:${cat.color}">${cat.icon} ${cat.name}</span>`}).join('');
+    const itemPreview=e.items.slice(0,3).map(i=>esc(i.text)).join(' · ');
+    return `<div class="log-entry" onclick="viewEntry('${e.id}')">
+      <div class="log-date">${fmtDate(e.date)}</div>
+      <div style="font-size:12px;color:#999;margin-top:2px">${esc(itemPreview)}${e.items.length>3?' ...':''}</div>
+      <div class="log-tags">${tags}</div>
+    </div>`;
+  }).join('');
+}
+
+function viewEntry(id){
+  const e=S.entries.find(x=>x.id===id);
+  if(!e)return;
+  const items=e.items.map(i=>{
+    const cat=catById(i.cat);
+    return `<div class="card cat-${i.cat}" style="margin-bottom:6px">
+      <div style="font-size:11px;font-weight:600;margin-bottom:4px" class="color-${i.cat}">${cat.icon} ${cat.name}</div>
+      <div style="font-size:13px">${esc(i.text)}</div>
+      ${i.book?`<div style="font-size:11px;color:#888;margin-top:4px">📖 ${esc(i.book)}</div>`:''}
+      ${i.mood?`<div style="font-size:11px;margin-top:4px">${moodEmoji(i.mood)} ${i.mood}</div>`:''}
+    </div>`;
+  }).join('');
+  showModal(`<h3>${fmtDate(e.date)}</h3>
+    ${e.summary?`<div style="font-size:13px;color:#999;margin-bottom:12px">${esc(e.summary)}</div>`:''}
+    ${items}
+    <div style="display:flex;gap:6px;margin-top:12px">
+      <button class="btn btn-sm btn-secondary" style="flex:1" onclick="editEntry('${e.id}')">Edit</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteEntry('${e.id}')">Delete</button>
+    </div>`);
+}
+
+function deleteEntry(id){
+  if(!confirm('Delete this entry?'))return;
+  S.entries=S.entries.filter(e=>e.id!==id);
+  saveState();closeModal();renderLog();toast('Entry deleted');
+}
+
+function moodEmoji(m){
+  const map={great:'😄',good:'🙂',okay:'😐',rough:'😟',tough:'😤'};
+  return map[m]||'';
+}
+
+// ── New Entry Form ──
+document.getElementById('btn-new-entry').addEventListener('click',()=>openEntryForm());
+
+function openEntryForm(existing){
+  const e=existing||{id:null,date:today(),items:[],summary:''};
+  const isEdit=!!existing;
+
+  // Figure out which cats are active
+  const activeCats=new Set(e.items.map(i=>i.cat));
+
+  let catChips=CATS.map(c=>`<span class="chip chip-${c.id} ${activeCats.has(c.id)?'on':''}" data-cat="${c.id}">${c.icon} ${c.name}</span>`).join('');
+
+  let catSections=CATS.map(c=>{
+    const item=e.items.find(i=>i.cat===c.id)||{};
+    const extra=c.id==='reading'?`<label>Book title</label><input type="text" class="cat-book" data-cat="${c.id}" value="${esc(item.book||'')}" placeholder="What did you read?">`:'';
+    const moodOpts=c.id==='behavior'?`<label>How was today?</label>
+      <div class="rating-row" data-cat="${c.id}" style="display:flex;gap:6px;margin:4px 0">
+        ${['great','good','okay','rough','tough'].map(m=>`<span class="chip ${item.mood===m?'on':''}" data-mood="${m}">${moodEmoji(m)} ${m}</span>`).join('')}
+      </div>`:'';
+    return `<div class="cat-section bg-${c.id} ${activeCats.has(c.id)?'visible':''}" data-cat="${c.id}">
+      <h4 class="color-${c.id}">${c.icon} ${c.name}</h4>
+      ${extra}
+      ${moodOpts}
+      <label>Notes</label>
+      <textarea class="cat-notes" data-cat="${c.id}" placeholder="What happened today?">${esc(item.text||'')}</textarea>
+    </div>`;
+  }).join('');
+
+  showModal(`<h3>${isEdit?'Edit':'New'} Entry</h3>
+    <label>Date</label>
+    <input type="date" id="entry-date" value="${e.date}">
+    <label>What categories are relevant tonight?</label>
+    <div class="chip-row" id="cat-chips">${catChips}</div>
+    <div id="cat-sections">${catSections}</div>
+    <label>Overall notes (optional)</label>
+    <textarea id="entry-summary" placeholder="Anything else about today?">${esc(e.summary||'')}</textarea>
+    <button class="btn btn-primary btn-block" id="btn-save-entry">${isEdit?'Update':'Save'} Entry</button>`);
+
+  // Chip toggles
+  document.querySelectorAll('#cat-chips .chip').forEach(chip=>{
+    chip.addEventListener('click',()=>{
+      chip.classList.toggle('on');
+      const cat=chip.dataset.cat;
+      const section=document.querySelector(`.cat-section[data-cat="${cat}"]`);
+      section.classList.toggle('visible',chip.classList.contains('on'));
+    });
+  });
+
+  // Mood chips
+  document.querySelectorAll('.rating-row').forEach(row=>{
+    row.querySelectorAll('.chip').forEach(chip=>{
+      chip.addEventListener('click',()=>{
+        row.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+        chip.classList.toggle('on');
+      });
+    });
+  });
+
+  // Save
+  document.getElementById('btn-save-entry').addEventListener('click',()=>{
+    const date=document.getElementById('entry-date').value;
+    if(!date){toast('Pick a date',true);return}
+
+    const items=[];
+    document.querySelectorAll('#cat-chips .chip.on').forEach(chip=>{
+      const cat=chip.dataset.cat;
+      const notes=document.querySelector(`.cat-notes[data-cat="${cat}"]`).value.trim();
+      const bookEl=document.querySelector(`.cat-book[data-cat="${cat}"]`);
+      const book=bookEl?bookEl.value.trim():'';
+      const moodRow=document.querySelector(`.rating-row[data-cat="${cat}"]`);
+      const moodChip=moodRow?moodRow.querySelector('.chip.on'):null;
+      const mood=moodChip?moodChip.dataset.mood:'';
+      if(notes||book||mood){
+        items.push({cat,text:notes,book,mood});
+      }
+    });
+
+    if(!items.length){toast('Add notes to at least one category',true);return}
+
+    const summary=document.getElementById('entry-summary').value.trim();
+
+    if(isEdit){
+      const idx=S.entries.findIndex(x=>x.id===e.id);
+      if(idx>=0){S.entries[idx]={...S.entries[idx],date,items,summary}}
+    }else{
+      S.entries.push({id:uid(),date,items,summary});
+    }
+    saveState();closeModal();renderLog();
+    toast(isEdit?'Entry updated':'Entry saved');
+  });
+}
+
+function editEntry(id){
+  closeModal();
+  const e=S.entries.find(x=>x.id===id);
+  if(e)setTimeout(()=>openEntryForm(e),100);
+}
+
+// ── Category Pages ──
+function renderCategory(cat){
+  renderGoals(cat);
+  renderHistory(cat);
+}
+
+function renderGoals(cat){
+  const el=document.getElementById(cat+'-goals');
+  const goals=S.goals.filter(g=>g.cat===cat);
+  const c=catById(cat);
+
+  const active=goals.filter(g=>g.status==='active');
+  const done=goals.filter(g=>g.status==='done');
+
+  let html=`<div class="section-header"><h4>Goals</h4><button class="btn btn-sm btn-primary" onclick="addGoal('${cat}')">+ Add</button></div>`;
+
+  if(!active.length&&!done.length){
+    html+=`<div class="empty"><div class="empty-text">No goals yet. Add one to start tracking.</div></div>`;
+  }
+
+  active.forEach(g=>{
+    const noteCount=g.notes?g.notes.length:0;
+    const lastNote=noteCount?g.notes[g.notes.length-1]:'';
+    html+=`<div class="goal-item card cat-${cat}" onclick="viewGoal('${g.id}')">
+      <div class="goal-text">
+        <div class="goal-title">${esc(g.title)}</div>
+        <div class="goal-desc">${esc(g.desc)}</div>
+        ${lastNote?`<div class="goal-notes">Latest: ${esc(lastNote.text)} (${fmtDate(lastNote.date)})</div>`:''}
+        ${noteCount?`<div style="font-size:10px;color:#666;margin-top:2px">${noteCount} note${noteCount>1?'s':''}</div>`:''}
+      </div>
+    </div>`;
+  });
+
+  if(done.length){
+    html+=`<div style="margin-top:12px;font-size:12px;color:#888;font-weight:600">Completed (${done.length})</div>`;
+    done.forEach(g=>{
+      html+=`<div class="goal-item done card cat-${cat}" onclick="viewGoal('${g.id}')" style="opacity:.5">
+        <div class="goal-text"><div class="goal-title">${esc(g.title)}</div></div>
+      </div>`;
+    });
+  }
+
+  el.innerHTML=html;
+}
+
+function renderHistory(cat){
+  const el=document.getElementById(cat+'-history');
+  const items=[];
+  S.entries.forEach(e=>{
+    e.items.forEach(i=>{
+      if(i.cat===cat) items.push({...i,date:e.date,entryId:e.id});
+    });
+  });
+  items.sort((a,b)=>b.date.localeCompare(a.date));
+
+  if(!items.length){
+    el.innerHTML='<div class="empty"><div class="empty-text">No entries for this category yet.</div></div>';
+    return;
+  }
+
+  el.innerHTML=items.map(i=>`<div class="hist-item">
+    <div class="hist-date">${fmtDate(i.date)}</div>
+    <div class="hist-text">${esc(i.text)}</div>
+    ${i.book?`<div style="font-size:11px;color:#3498db;margin-top:2px">📖 ${esc(i.book)}</div>`:''}
+    ${i.mood?`<div class="hist-mood">${moodEmoji(i.mood)} ${i.mood}</div>`:''}
+  </div>`).join('');
+}
+
+function viewGoal(id){
+  const g=S.goals.find(x=>x.id===id);
+  if(!g)return;
+  const cat=catById(g.cat);
+  const notes=(g.notes||[]).slice().reverse();
+
+  showModal(`<h3 class="color-${g.cat}">${cat.icon} ${esc(g.title)}</h3>
+    <div style="font-size:13px;color:#999;margin-bottom:12px">${esc(g.desc)}</div>
+    <div style="margin-bottom:12px">
+      <span class="chip ${g.status==='active'?'on':''}" onclick="toggleGoalStatus('${g.id}')">${g.status==='active'?'Active':'Completed'}</span>
+    </div>
+    <label>Add a progress note</label>
+    <div style="display:flex;gap:6px">
+      <input type="text" id="goal-note-input" placeholder="What happened?">
+      <button class="btn btn-sm btn-primary" onclick="addGoalNote('${g.id}')">Add</button>
+    </div>
+    <div style="margin-top:12px">
+      ${notes.length?notes.map(n=>`<div class="hist-item"><div class="hist-date">${fmtDate(n.date)}</div><div class="hist-text">${esc(n.text)}</div></div>`).join(''):'<div style="font-size:12px;color:#666">No notes yet.</div>'}
+    </div>
+    <div style="display:flex;gap:6px;margin-top:12px">
+      <button class="btn btn-sm btn-secondary" style="flex:1" onclick="editGoalPrompt('${g.id}')">Edit</button>
+      <button class="btn btn-sm btn-danger" onclick="deleteGoal('${g.id}')">Delete</button>
+    </div>`);
+}
+
+function toggleGoalStatus(id){
+  const g=S.goals.find(x=>x.id===id);
+  if(!g)return;
+  g.status=g.status==='active'?'done':'active';
+  saveState();closeModal();
+  renderCategory(g.cat);
+  toast(g.status==='done'?'Goal completed!':'Goal reactivated');
+}
+
+function addGoalNote(id){
+  const g=S.goals.find(x=>x.id===id);
+  if(!g)return;
+  const input=document.getElementById('goal-note-input');
+  const text=input.value.trim();
+  if(!text){toast('Enter a note',true);return}
+  if(!g.notes)g.notes=[];
+  g.notes.push({date:today(),text});
+  saveState();
+  viewGoal(id);
+  toast('Note added');
+}
+
+function addGoal(cat){
+  showModal(`<h3>New Goal</h3>
+    <label>Goal title</label>
+    <input type="text" id="new-goal-title" placeholder="What are we working toward?">
+    <label>Description (optional)</label>
+    <textarea id="new-goal-desc" placeholder="What does success look like?"></textarea>
+    <button class="btn btn-primary btn-block" onclick="saveNewGoal('${cat}')">Save Goal</button>`);
+}
+
+function saveNewGoal(cat){
+  const title=document.getElementById('new-goal-title').value.trim();
+  if(!title){toast('Enter a title',true);return}
+  const desc=document.getElementById('new-goal-desc').value.trim();
+  S.goals.push({id:uid(),cat,title,desc,status:'active',notes:[]});
+  saveState();closeModal();renderCategory(cat);toast('Goal added');
+}
+
+function editGoalPrompt(id){
+  const g=S.goals.find(x=>x.id===id);
+  if(!g)return;
+  showModal(`<h3>Edit Goal</h3>
+    <label>Title</label>
+    <input type="text" id="edit-goal-title" value="${esc(g.title)}">
+    <label>Description</label>
+    <textarea id="edit-goal-desc">${esc(g.desc)}</textarea>
+    <button class="btn btn-primary btn-block" onclick="saveEditGoal('${g.id}')">Update</button>`);
+}
+
+function saveEditGoal(id){
+  const g=S.goals.find(x=>x.id===id);
+  if(!g)return;
+  g.title=document.getElementById('edit-goal-title').value.trim();
+  g.desc=document.getElementById('edit-goal-desc').value.trim();
+  saveState();closeModal();renderCategory(g.cat);toast('Goal updated');
+}
+
+function deleteGoal(id){
+  if(!confirm('Delete this goal and all its notes?'))return;
+  const cat=S.goals.find(g=>g.id===id)?.cat;
+  S.goals=S.goals.filter(g=>g.id!==id);
+  saveState();closeModal();if(cat)renderCategory(cat);toast('Goal deleted');
+}
+
+// ── Insights ──
+function renderInsights(){
+  const el=document.getElementById('insights-content');
+  const totalEntries=S.entries.length;
+  if(!totalEntries){
+    el.innerHTML='<div class="empty"><div class="empty-icon">📊</div><div class="empty-text">Start logging to see insights here.</div></div>';
+    return;
+  }
+
+  // Basic stats
+  const sorted=[...S.entries].sort((a,b)=>a.date.localeCompare(b.date));
+  const firstDate=sorted[0].date;
+  const daysSinceStart=daysAgo(firstDate)+1;
+  const activeGoals=S.goals.filter(g=>g.status==='active').length;
+  const completedGoals=S.goals.filter(g=>g.status==='done').length;
+
+  // Reading streak
+  const readingDates=new Set();
+  S.entries.forEach(e=>{if(e.items.some(i=>i.cat==='reading'))readingDates.add(e.date)});
+  let readStreak=0;
+  let d=new Date();
+  while(true){
+    const ds=d.toISOString().slice(0,10);
+    if(readingDates.has(ds)){readStreak++;d.setDate(d.getDate()-1)}
+    else break;
+  }
+
+  // Category frequency
+  const catCounts={};
+  CATS.forEach(c=>catCounts[c.id]=0);
+  S.entries.forEach(e=>e.items.forEach(i=>catCounts[i.cat]=(catCounts[i.cat]||0)+1));
+
+  // Books read
+  const books=new Set();
+  S.entries.forEach(e=>e.items.forEach(i=>{if(i.book)books.add(i.book)}));
+
+  // Last 30 days streak visualization
+  const last30=[];
+  const now=new Date();
+  for(let i=29;i>=0;i--){
+    const dt=new Date(now);
+    dt.setDate(dt.getDate()-i);
+    const ds=dt.toISOString().slice(0,10);
+    const hasEntry=S.entries.some(e=>e.date===ds);
+    last30.push({date:ds,hit:hasEntry,isToday:i===0});
+  }
+
+  // Category with most attention
+  const topCat=CATS.reduce((a,b)=>catCounts[a.id]>=catCounts[b.id]?a:b);
+
+  // Behavior mood trend
+  const moodEntries=[];
+  S.entries.forEach(e=>{
+    e.items.forEach(i=>{
+      if(i.cat==='behavior'&&i.mood)moodEntries.push({date:e.date,mood:i.mood});
+    });
+  });
+
+  let html=`
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-val">${totalEntries}</div><div class="stat-lbl">Total Entries</div></div>
+      <div class="stat-card"><div class="stat-val">${readStreak}</div><div class="stat-lbl">Reading Streak</div></div>
+      <div class="stat-card"><div class="stat-val">${books.size}</div><div class="stat-lbl">Books Read</div></div>
+      <div class="stat-card"><div class="stat-val">${activeGoals}</div><div class="stat-lbl">Active Goals</div></div>
+    </div>
+
+    <div class="streak-bar">
+      <div class="streak-title">Last 30 Days</div>
+      <div class="streak-dots">
+        ${last30.map(d=>`<div class="streak-dot${d.hit?' hit':''}${d.isToday?' today':''}" title="${d.date}"></div>`).join('')}
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:10px">
+      <div class="card-title">Category Breakdown</div>
+      ${CATS.map(c=>{
+        const count=catCounts[c.id]||0;
+        const pct=totalEntries?Math.round(count/totalEntries*100):0;
+        return `<div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+          <span style="font-size:12px;min-width:90px" class="color-${c.id}">${c.icon} ${c.name}</span>
+          <div style="flex:1;height:6px;background:#3a3a3a;border-radius:3px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;background:${c.color};border-radius:3px"></div>
+          </div>
+          <span style="font-size:11px;color:#888;min-width:30px;text-align:right">${count}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+
+  if(completedGoals){
+    html+=`<div class="card"><div class="card-title" style="color:#2ecc71">🎉 ${completedGoals} Goal${completedGoals>1?'s':''} Completed</div></div>`;
+  }
+
+  if(moodEntries.length>=3){
+    const recent=moodEntries.slice(-5);
+    const moodScore={great:5,good:4,okay:3,rough:2,tough:1};
+    const avg=recent.reduce((s,m)=>s+(moodScore[m.mood]||3),0)/recent.length;
+    const trend=avg>=4?'Trending great 😄':avg>=3?'Mostly good 🙂':avg>=2?'Some rough patches 😟':'Tough stretch 😤';
+    html+=`<div class="card"><div class="card-title">Behavior Trend</div><div style="font-size:13px;margin-top:4px">${trend} (last ${recent.length} entries)</div></div>`;
+  }
+
+  el.innerHTML=html;
+}
+
+// ── Modal ──
+function showModal(html){
+  document.getElementById('modal-content').innerHTML=html;
+  document.getElementById('modal-overlay').classList.add('show');
+}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('show')}
+document.getElementById('modal-overlay').addEventListener('click',e=>{
+  if(e.target===document.getElementById('modal-overlay'))closeModal();
+});
+
+// ── Export/Import ──
+document.getElementById('btn-export').addEventListener('click',()=>{
+  const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`levi-tracker-${today()}.json`;
+  a.click();
+  toast('Data exported');
+});
+
+document.getElementById('btn-import').addEventListener('click',()=>{
+  document.getElementById('import-file').click();
+});
+
+document.getElementById('import-file').addEventListener('change',e=>{
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(!data.entries&&!data.goals){toast('Invalid file',true);return}
+      S=data;
+      saveState();
+      renderTab('log');
+      toast('Data imported');
+    }catch(err){toast('Import failed',true)}
+  };
+  reader.readAsText(file);
+  e.target.value='';
+});
+
+// ── Init ──
+loadState();
+initTabs();
+renderLog();
+</script>
+</body>
+</html>
