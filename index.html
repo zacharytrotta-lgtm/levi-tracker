@@ -255,44 +255,58 @@ function catById(id){return CATS.find(c=>c.id===id)}
 const DEFAULT_STATE={
   entries:[],
   goals:[
-    // Speech
-    {id:uid(),cat:'speech',title:'Clear "th" sounds',desc:'Says "the/that/this" instead of "da/dat/dis"',status:'active',notes:[]},
-    {id:uid(),cat:'speech',title:'Clear "r" sounds',desc:'Pronounces R clearly in words like "red", "car", "brother"',status:'active',notes:[]},
-    {id:uid(),cat:'speech',title:'Clear "l" sounds',desc:'Pronounces L clearly in words like "Levi", "like", "ball"',status:'active',notes:[]},
-    {id:uid(),cat:'speech',title:'Multi-syllable words',desc:'Says longer words clearly without dropping syllables',status:'active',notes:[]},
+    // Speech — all longterm, these take months
+    {id:uid(),cat:'speech',title:'Clear "th" sounds',desc:'Says "the/that/this" instead of "da/dat/dis"',status:'active',tier:'longterm',reminder:'monthly',notes:[]},
+    {id:uid(),cat:'speech',title:'Clear "r" sounds',desc:'Pronounces R clearly in words like "red", "car", "brother"',status:'active',tier:'longterm',reminder:'monthly',notes:[]},
+    {id:uid(),cat:'speech',title:'Clear "l" sounds',desc:'Pronounces L clearly in words like "Levi", "like", "ball"',status:'active',tier:'longterm',reminder:'monthly',notes:[]},
+    {id:uid(),cat:'speech',title:'Multi-syllable words',desc:'Says longer words clearly without dropping syllables',status:'active',tier:'longterm',reminder:'monthly',notes:[]},
     // Reading
-    {id:uid(),cat:'reading',title:'Recognize alphabet letters',desc:'Can identify all 26 uppercase and lowercase letters',status:'active',notes:[]},
-    {id:uid(),cat:'reading',title:'Letter sounds',desc:'Knows the sound each letter makes',status:'active',notes:[]},
-    {id:uid(),cat:'reading',title:'Sight words',desc:'Recognizes common kindergarten sight words (the, and, is, it, etc.)',status:'active',notes:[]},
-    {id:uid(),cat:'reading',title:'Nightly reading habit',desc:'Consistent bedtime reading sessions',status:'active',notes:[]},
-    // Behavior
-    {id:uid(),cat:'behavior',title:'Tantrum management',desc:'Reducing frequency and intensity of tantrums, learning to express frustration with words',status:'active',notes:[]},
-    {id:uid(),cat:'behavior',title:'Listening first time',desc:'Follows instructions without needing to be asked multiple times',status:'active',notes:[]},
-    {id:uid(),cat:'behavior',title:'Patience / waiting',desc:'Can wait his turn, handle short delays without meltdowns',status:'active',notes:[]},
-    // Self-Care
-    {id:uid(),cat:'selfcare',title:'Wiping independently',desc:'Can wipe consistently and properly after using the bathroom',status:'active',notes:[]},
-    {id:uid(),cat:'selfcare',title:'Dressing independently',desc:'Picks out clothes and dresses himself including buttons/zippers',status:'active',notes:[]},
-    {id:uid(),cat:'selfcare',title:'Teeth brushing',desc:'Brushes teeth properly with minimal supervision',status:'active',notes:[]},
-    {id:uid(),cat:'selfcare',title:'Hand washing',desc:'Washes hands thoroughly without reminders after bathroom and before meals',status:'active',notes:[]},
+    {id:uid(),cat:'reading',title:'Nightly reading habit',desc:'Consistent bedtime reading sessions',status:'active',tier:'weekly',reminder:'daily',notes:[]},
+    {id:uid(),cat:'reading',title:'Recognize alphabet letters',desc:'Can identify all 26 uppercase and lowercase letters',status:'active',tier:'longterm',reminder:'weekly',notes:[]},
+    {id:uid(),cat:'reading',title:'Letter sounds',desc:'Knows the sound each letter makes',status:'active',tier:'longterm',reminder:'weekly',notes:[]},
+    {id:uid(),cat:'reading',title:'Sight words',desc:'Recognizes common kindergarten sight words (the, and, is, it, etc.)',status:'active',tier:'longterm',reminder:'monthly',notes:[]},
+    // Behavior — weekly focus items
+    {id:uid(),cat:'behavior',title:'Tantrum management',desc:'Reducing frequency and intensity of tantrums, learning to express frustration with words',status:'active',tier:'weekly',reminder:'daily',notes:[]},
+    {id:uid(),cat:'behavior',title:'Listening first time',desc:'Follows instructions without needing to be asked multiple times',status:'active',tier:'weekly',reminder:'daily',notes:[]},
+    {id:uid(),cat:'behavior',title:'Patience / waiting',desc:'Can wait his turn, handle short delays without meltdowns',status:'active',tier:'weekly',reminder:'weekly',notes:[]},
+    // Self-Care — weekly practice items
+    {id:uid(),cat:'selfcare',title:'Wiping independently',desc:'Can wipe consistently and properly after using the bathroom',status:'active',tier:'weekly',reminder:'daily',notes:[]},
+    {id:uid(),cat:'selfcare',title:'Dressing independently',desc:'Picks out clothes and dresses himself including buttons/zippers',status:'active',tier:'weekly',reminder:'weekly',notes:[]},
+    {id:uid(),cat:'selfcare',title:'Teeth brushing',desc:'Brushes teeth properly with minimal supervision',status:'active',tier:'weekly',reminder:'daily',notes:[]},
+    {id:uid(),cat:'selfcare',title:'Hand washing',desc:'Washes hands thoroughly without reminders after bathroom and before meals',status:'active',tier:'weekly',reminder:'weekly',notes:[]},
     // Academics
-    {id:uid(),cat:'academics',title:'Count to 20',desc:'Counts objects accurately up to 20',status:'active',notes:[]},
-    {id:uid(),cat:'academics',title:'Number recognition',desc:'Recognizes written numbers 0-20',status:'active',notes:[]},
-    {id:uid(),cat:'academics',title:'Basic shapes',desc:'Identifies and names circle, square, triangle, rectangle, star, diamond',status:'active',notes:[]},
-    {id:uid(),cat:'academics',title:'Colors',desc:'Names all basic colors accurately',status:'active',notes:[]},
-    {id:uid(),cat:'academics',title:'Write his name',desc:'Can write "Levi" legibly',status:'active',notes:[]},
+    {id:uid(),cat:'academics',title:'Count to 20',desc:'Counts objects accurately up to 20',status:'active',tier:'longterm',reminder:'weekly',notes:[]},
+    {id:uid(),cat:'academics',title:'Number recognition',desc:'Recognizes written numbers 0-20',status:'active',tier:'longterm',reminder:'weekly',notes:[]},
+    {id:uid(),cat:'academics',title:'Basic shapes',desc:'Identifies and names circle, square, triangle, rectangle, star, diamond',status:'active',tier:'longterm',reminder:'monthly',notes:[]},
+    {id:uid(),cat:'academics',title:'Colors',desc:'Names all basic colors accurately',status:'active',tier:'weekly',reminder:'weekly',notes:[]},
+    {id:uid(),cat:'academics',title:'Write his name',desc:'Can write "Levi" legibly',status:'active',tier:'longterm',reminder:'weekly',notes:[]},
     // Social
-    {id:uid(),cat:'social',title:'Sharing with others',desc:'Shares toys and takes turns without major conflicts',status:'active',notes:[]},
-    {id:uid(),cat:'social',title:'City adjustment',desc:'Comfortable in the neighborhood, feels at home in Canton',status:'active',notes:[]},
-    {id:uid(),cat:'social',title:'Kindergarten readiness',desc:'Ready for classroom environment — sitting still, following group instructions, interacting with peers',status:'active',notes:[]}
+    {id:uid(),cat:'social',title:'Sharing with others',desc:'Shares toys and takes turns without major conflicts',status:'active',tier:'weekly',reminder:'weekly',notes:[]},
+    {id:uid(),cat:'social',title:'City adjustment',desc:'Comfortable in the neighborhood, feels at home in Canton',status:'active',tier:'longterm',reminder:'monthly',notes:[]},
+    {id:uid(),cat:'social',title:'Kindergarten readiness',desc:'Ready for classroom environment — sitting still, following group instructions, interacting with peers',status:'active',tier:'longterm',reminder:'monthly',notes:[]}
   ]
 };
 
 let S;
 function loadState(){
-  try{const raw=localStorage.getItem('levi_dev');if(raw){S=JSON.parse(raw);if(!S.goals)S.goals=DEFAULT_STATE.goals;if(!S.entries)S.entries=[];}else{S=JSON.parse(JSON.stringify(DEFAULT_STATE))}}
+  try{const raw=localStorage.getItem('levi_dev');if(raw){S=JSON.parse(raw);if(!S.goals)S.goals=DEFAULT_STATE.goals;if(!S.entries)S.entries=[];
+    // Migrate: add tier/reminder to old goals
+    S.goals.forEach(g=>{if(!g.tier)g.tier='longterm';if(!g.reminder)g.reminder='none';});
+  }else{S=JSON.parse(JSON.stringify(DEFAULT_STATE))}}
   catch(e){S=JSON.parse(JSON.stringify(DEFAULT_STATE))}
 }
 function saveState(){localStorage.setItem('levi_dev',JSON.stringify(S))}
+
+function isReminderDue(g){
+  if(!g.reminder||g.reminder==='none'||g.status==='done')return false;
+  const lastNote=g.notes&&g.notes.length?g.notes[g.notes.length-1].date:null;
+  if(!lastNote)return true; // never logged, always due
+  const d=daysAgo(lastNote);
+  if(g.reminder==='daily')return d>=1;
+  if(g.reminder==='weekly')return d>=7;
+  if(g.reminder==='monthly')return d>=30;
+  return false;
+}
 
 // ── Tab navigation ──
 function initTabs(){
@@ -322,7 +336,7 @@ function renderLog(){
     el.innerHTML='<div class="empty"><div class="empty-icon">📝</div><div class="empty-text">No entries yet. Tap + New Entry to log tonight.</div></div>';
     return;
   }
-  el.innerHTML=sorted.map(e=>{
+  const cards=sorted.map(e=>{
     const cats=[...new Set(e.items.map(i=>i.cat))];
     const tags=cats.map(c=>{const cat=catById(c);return `<span class="log-tag bg-${c}" style="color:${cat.color}">${cat.icon} ${cat.name}</span>`}).join('');
     const itemPreview=e.items.slice(0,3).map(i=>esc(i.text)).join(' · ');
@@ -331,7 +345,14 @@ function renderLog(){
       <div style="font-size:12px;color:#999;margin-top:2px">${esc(itemPreview)}${e.items.length>3?' ...':''}</div>
       <div class="log-tags">${tags}</div>
     </div>`;
-  }).join('');
+  });
+  el.innerHTML=renderCollapsible('dailylog','Entries',cards,3);
+  if(_expandedSections.has('dailylog')){
+    const o=document.getElementById('sec-overflow-dailylog');
+    const t=document.getElementById('sec-toggle-dailylog');
+    if(o)o.style.display='block';
+    if(t)t.textContent='collapse';
+  }
 }
 
 function viewEntry(id){
@@ -470,43 +491,92 @@ function renderCategory(cat){
   renderHistory(cat);
 }
 
+function renderGoalCard(g,cat){
+  const noteCount=g.notes?g.notes.length:0;
+  const lastNote=noteCount?g.notes[g.notes.length-1]:'';
+  const due=isReminderDue(g);
+  const isDone=g.status==='done';
+  return `<div class="goal-item card cat-${cat}${isDone?' done':''}" onclick="viewGoal('${g.id}')" style="${isDone?'opacity:.5':''}">
+    <div class="goal-text">
+      <div class="goal-title">${esc(g.title)}${due?' <span style="color:#f39c12;font-size:10px;font-weight:700">● NEEDS UPDATE</span>':''}</div>
+      ${!isDone?`<div class="goal-desc">${esc(g.desc)}</div>`:''}
+      ${lastNote&&!isDone?`<div class="goal-notes">Latest: ${esc(lastNote.text)} (${fmtDate(lastNote.date)})</div>`:''}
+      ${noteCount&&!isDone?`<div style="font-size:10px;color:#666;margin-top:2px">${noteCount} note${noteCount>1?'s':''}${g.reminder&&g.reminder!=='none'?' · remind '+g.reminder:''}</div>`:''}
+    </div>
+  </div>`;
+}
+
+function renderCollapsible(id,title,items,defaultShow){
+  if(!items.length)return '';
+  const count=items.length;
+  const show=defaultShow||3;
+  const needsExpand=count>show;
+  return `<div class="collapsible-section" id="sec-${id}">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:12px 0 6px;cursor:pointer" onclick="toggleSection('${id}')">
+      <span style="font-size:12px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px">${title} (${count})</span>
+      ${needsExpand?'<span style="font-size:11px;color:#7c4dff" id="sec-toggle-'+id+'">show all</span>':''}
+    </div>
+    <div class="sec-items" id="sec-items-${id}">
+      ${items.slice(0,show).join('')}
+    </div>
+    ${needsExpand?`<div class="sec-overflow" id="sec-overflow-${id}" style="display:none">${items.slice(show).join('')}</div>`:''}
+  </div>`;
+}
+
+const _expandedSections=new Set();
+function toggleSection(id){
+  const overflow=document.getElementById('sec-overflow-'+id);
+  const toggle=document.getElementById('sec-toggle-'+id);
+  if(!overflow||!toggle)return;
+  if(_expandedSections.has(id)){
+    _expandedSections.delete(id);
+    overflow.style.display='none';
+    toggle.textContent='show all';
+  }else{
+    _expandedSections.add(id);
+    overflow.style.display='block';
+    toggle.textContent='collapse';
+  }
+}
+
 function renderGoals(cat){
   const el=document.getElementById(cat+'-goals');
   const goals=S.goals.filter(g=>g.cat===cat);
-  const c=catById(cat);
 
-  const active=goals.filter(g=>g.status==='active');
+  const weekly=goals.filter(g=>g.status==='active'&&g.tier==='weekly');
+  const longterm=goals.filter(g=>g.status==='active'&&g.tier==='longterm');
   const done=goals.filter(g=>g.status==='done');
+
+  // Sort: reminder-due goals first within each tier
+  const sortDue=(a,b)=>(isReminderDue(b)?1:0)-(isReminderDue(a)?1:0);
+  weekly.sort(sortDue);
+  longterm.sort(sortDue);
 
   let html=`<div class="section-header"><h4>Goals</h4><button class="btn btn-sm btn-primary" onclick="addGoal('${cat}')">+ Add</button></div>`;
 
-  if(!active.length&&!done.length){
+  if(!weekly.length&&!longterm.length&&!done.length){
     html+=`<div class="empty"><div class="empty-text">No goals yet. Add one to start tracking.</div></div>`;
   }
 
-  active.forEach(g=>{
-    const noteCount=g.notes?g.notes.length:0;
-    const lastNote=noteCount?g.notes[g.notes.length-1]:'';
-    html+=`<div class="goal-item card cat-${cat}" onclick="viewGoal('${g.id}')">
-      <div class="goal-text">
-        <div class="goal-title">${esc(g.title)}</div>
-        <div class="goal-desc">${esc(g.desc)}</div>
-        ${lastNote?`<div class="goal-notes">Latest: ${esc(lastNote.text)} (${fmtDate(lastNote.date)})</div>`:''}
-        ${noteCount?`<div style="font-size:10px;color:#666;margin-top:2px">${noteCount} note${noteCount>1?'s':''}</div>`:''}
-      </div>
-    </div>`;
-  });
+  const wKey=cat+'_weekly';
+  const lKey=cat+'_longterm';
+  const dKey=cat+'_done';
 
-  if(done.length){
-    html+=`<div style="margin-top:12px;font-size:12px;color:#888;font-weight:600">Completed (${done.length})</div>`;
-    done.forEach(g=>{
-      html+=`<div class="goal-item done card cat-${cat}" onclick="viewGoal('${g.id}')" style="opacity:.5">
-        <div class="goal-text"><div class="goal-title">${esc(g.title)}</div></div>
-      </div>`;
-    });
-  }
+  html+=renderCollapsible(wKey,'Weekly Focus',weekly.map(g=>renderGoalCard(g,cat)),3);
+  html+=renderCollapsible(lKey,'Long-term',longterm.map(g=>renderGoalCard(g,cat)),3);
+  html+=renderCollapsible(dKey,'Completed',done.map(g=>renderGoalCard(g,cat)),3);
 
   el.innerHTML=html;
+
+  // Restore expanded state
+  [wKey,lKey,dKey].forEach(k=>{
+    if(_expandedSections.has(k)){
+      const o=document.getElementById('sec-overflow-'+k);
+      const t=document.getElementById('sec-toggle-'+k);
+      if(o)o.style.display='block';
+      if(t)t.textContent='collapse';
+    }
+  });
 }
 
 function renderHistory(cat){
@@ -524,12 +594,22 @@ function renderHistory(cat){
     return;
   }
 
-  el.innerHTML=items.map(i=>`<div class="hist-item">
+  const histCards=items.map(i=>`<div class="hist-item">
     <div class="hist-date">${fmtDate(i.date)}</div>
     <div class="hist-text">${esc(i.text)}</div>
     ${i.book?`<div style="font-size:11px;color:#3498db;margin-top:2px">📖 ${esc(i.book)}</div>`:''}
     ${i.mood?`<div class="hist-mood">${moodEmoji(i.mood)} ${i.mood}</div>`:''}
-  </div>`).join('');
+  </div>`);
+
+  const hKey=cat+'_history';
+  el.innerHTML=renderCollapsible(hKey,'Daily Log',histCards,3);
+
+  if(_expandedSections.has(hKey)){
+    const o=document.getElementById('sec-overflow-'+hKey);
+    const t=document.getElementById('sec-toggle-'+hKey);
+    if(o)o.style.display='block';
+    if(t)t.textContent='collapse';
+  }
 }
 
 function viewGoal(id){
@@ -538,10 +618,18 @@ function viewGoal(id){
   const cat=catById(g.cat);
   const notes=(g.notes||[]).slice().reverse();
 
+  const tierLabel=g.tier==='weekly'?'Weekly Focus':'Long-term';
+  const reminderLabel=g.reminder&&g.reminder!=='none'?'Remind '+g.reminder:'No reminder';
+  const due=isReminderDue(g);
+
   showModal(`<h3 class="color-${g.cat}">${cat.icon} ${esc(g.title)}</h3>
-    <div style="font-size:13px;color:#999;margin-bottom:12px">${esc(g.desc)}</div>
+    <div style="font-size:13px;color:#999;margin-bottom:8px">${esc(g.desc)}</div>
+    <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+      <span style="font-size:10px;padding:3px 8px;border-radius:10px;background:#252525;color:#888">${tierLabel}</span>
+      <span style="font-size:10px;padding:3px 8px;border-radius:10px;background:${due?'#3a2a10':'#252525'};color:${due?'#f39c12':'#888'}">${due?'● ':''} ${reminderLabel}</span>
+    </div>
     <div style="margin-bottom:12px">
-      <span class="chip ${g.status==='active'?'on':''}" onclick="toggleGoalStatus('${g.id}')">${g.status==='active'?'Active':'Completed'}</span>
+      <button class="btn btn-sm ${g.status==='active'?'btn-primary':'btn-secondary'}" onclick="toggleGoalStatus('${g.id}')" style="min-width:140px">${g.status==='active'?'Mark Complete ✓':'↩ Reactivate'}</button>
     </div>
     <label>Add a progress note</label>
     <div style="display:flex;gap:6px">
@@ -561,7 +649,8 @@ function toggleGoalStatus(id){
   const g=S.goals.find(x=>x.id===id);
   if(!g)return;
   g.status=g.status==='active'?'done':'active';
-  saveState();closeModal();
+  saveState();
+  document.getElementById('modal-overlay').classList.remove('show');
   renderCategory(g.cat);
   toast(g.status==='done'?'Goal completed!':'Goal reactivated');
 }
@@ -585,6 +674,18 @@ function addGoal(cat){
     <input type="text" id="new-goal-title" placeholder="What are we working toward?">
     <label>Description (optional)</label>
     <textarea id="new-goal-desc" placeholder="What does success look like?"></textarea>
+    <label>Tier</label>
+    <select id="new-goal-tier">
+      <option value="weekly">Weekly Focus</option>
+      <option value="longterm">Long-term</option>
+    </select>
+    <label>Reminder (nudge when no notes added within...)</label>
+    <select id="new-goal-reminder">
+      <option value="none">No reminder</option>
+      <option value="daily">Daily</option>
+      <option value="weekly">Weekly</option>
+      <option value="monthly">Monthly</option>
+    </select>
     <button class="btn btn-primary btn-block" onclick="saveNewGoal('${cat}')">Save Goal</button>`);
 }
 
@@ -592,7 +693,9 @@ function saveNewGoal(cat){
   const title=document.getElementById('new-goal-title').value.trim();
   if(!title){toast('Enter a title',true);return}
   const desc=document.getElementById('new-goal-desc').value.trim();
-  S.goals.push({id:uid(),cat,title,desc,status:'active',notes:[]});
+  const tier=document.getElementById('new-goal-tier').value;
+  const reminder=document.getElementById('new-goal-reminder').value;
+  S.goals.push({id:uid(),cat,title,desc,status:'active',tier,reminder,notes:[]});
   saveState();closeModal();renderCategory(cat);toast('Goal added');
 }
 
@@ -604,6 +707,18 @@ function editGoalPrompt(id){
     <input type="text" id="edit-goal-title" value="${esc(g.title)}">
     <label>Description</label>
     <textarea id="edit-goal-desc">${esc(g.desc)}</textarea>
+    <label>Tier</label>
+    <select id="edit-goal-tier">
+      <option value="weekly" ${g.tier==='weekly'?'selected':''}>Weekly Focus</option>
+      <option value="longterm" ${g.tier==='longterm'?'selected':''}>Long-term</option>
+    </select>
+    <label>Reminder</label>
+    <select id="edit-goal-reminder">
+      <option value="none" ${g.reminder==='none'?'selected':''}>No reminder</option>
+      <option value="daily" ${g.reminder==='daily'?'selected':''}>Daily</option>
+      <option value="weekly" ${g.reminder==='weekly'?'selected':''}>Weekly</option>
+      <option value="monthly" ${g.reminder==='monthly'?'selected':''}>Monthly</option>
+    </select>
     <button class="btn btn-primary btn-block" onclick="saveEditGoal('${g.id}')">Update</button>`);
 }
 
@@ -612,6 +727,8 @@ function saveEditGoal(id){
   if(!g)return;
   g.title=document.getElementById('edit-goal-title').value.trim();
   g.desc=document.getElementById('edit-goal-desc').value.trim();
+  g.tier=document.getElementById('edit-goal-tier').value;
+  g.reminder=document.getElementById('edit-goal-reminder').value;
   saveState();closeModal();renderCategory(g.cat);toast('Goal updated');
 }
 
@@ -730,7 +847,9 @@ function showModal(html){
   document.getElementById('modal-content').innerHTML=html;
   document.getElementById('modal-overlay').classList.add('show');
 }
-function closeModal(){document.getElementById('modal-overlay').classList.remove('show')}
+function closeModal(){
+  document.getElementById('modal-overlay').classList.remove('show');
+}
 document.getElementById('modal-overlay').addEventListener('click',e=>{
   if(e.target===document.getElementById('modal-overlay'))closeModal();
 });
