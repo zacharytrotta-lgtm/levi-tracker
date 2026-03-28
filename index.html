@@ -158,23 +158,23 @@ textarea{resize:vertical;min-height:60px}
 </div>
 
 <div class="tab-bar" id="tab-bar">
-  <button class="tab-btn active" data-tab="log"><span class="tab-icon">📝</span>Log</button>
+  <button class="tab-btn active" data-tab="log"><span class="tab-icon">🏠</span>Home</button>
   <button class="tab-btn" data-tab="speech"><span class="tab-icon">🗣</span>Speech</button>
   <button class="tab-btn" data-tab="reading"><span class="tab-icon">📚</span>Reading</button>
   <button class="tab-btn" data-tab="behavior"><span class="tab-icon">⭐</span>Behavior</button>
   <button class="tab-btn" data-tab="selfcare"><span class="tab-icon">🧹</span>Self-Care</button>
   <button class="tab-btn" data-tab="academics"><span class="tab-icon">🔢</span>Academics</button>
   <button class="tab-btn" data-tab="social"><span class="tab-icon">👫</span>Social</button>
-  <button class="tab-btn" data-tab="insights"><span class="tab-icon">📊</span>Insights</button>
 </div>
 
-<!-- Daily Log -->
+<!-- Dashboard / Home -->
 <div id="pg-log" class="page active">
-  <div class="section-header">
-    <h3>Daily Log</h3>
-    <button class="btn btn-sm btn-primary" id="btn-new-entry">+ New Entry</button>
-  </div>
-  <div id="log-list"></div>
+  <button class="btn btn-primary btn-block" id="btn-new-entry" style="font-size:15px;padding:14px;margin-bottom:14px">+ Log Tonight</button>
+  <div id="dash-alerts"></div>
+  <div id="dash-stats"></div>
+  <div id="dash-streak"></div>
+  <div id="dash-trend"></div>
+  <div id="dash-entries"></div>
 </div>
 
 <!-- Category pages -->
@@ -195,6 +195,7 @@ textarea{resize:vertical;min-height:60px}
 <div id="pg-behavior" class="page">
   <h3 style="margin-bottom:12px" class="color-behavior">Behavior & Discipline</h3>
   <div id="behavior-goals"></div>
+  <div id="behavior-insights"></div>
   <div class="section-header" style="margin-top:16px"><h4>History</h4></div>
   <div id="behavior-history"></div>
 </div>
@@ -220,11 +221,6 @@ textarea{resize:vertical;min-height:60px}
   <div id="social-history"></div>
 </div>
 
-<!-- Insights -->
-<div id="pg-insights" class="page">
-  <h3 style="margin-bottom:12px">Insights</h3>
-  <div id="insights-content"></div>
-</div>
 
 <!-- Modal -->
 <div id="modal-overlay" class="modal-overlay"><div id="modal-content" class="modal"></div></div>
@@ -254,6 +250,11 @@ function catById(id){return CATS.find(c=>c.id===id)}
 // ── State ──
 const DEFAULT_STATE={
   entries:[],
+  quickTags:{
+    speech:['Practiced sound','Read the sound','Speech therapy','New word clear','Conversation practice'],
+    behavior:["Wouldn't eat",'Threw a tantrum','Bad at school',"Didn't listen",'Bedtime resistance','Hitting/pushing','Whining','Great day'],
+    selfcare:['Wiped well','Needed help wiping','Dressed self','Brushed teeth well','Needed teeth reminder','Washed hands unprompted','Bath/shower independent'],
+  },
   goals:[
     // Speech — all longterm, these take months
     {id:uid(),cat:'speech',title:'Clear "th" sounds',desc:'Says "the/that/this" instead of "da/dat/dis"',status:'active',tier:'longterm',reminder:'monthly',notes:[]},
@@ -290,8 +291,9 @@ const DEFAULT_STATE={
 let S;
 function loadState(){
   try{const raw=localStorage.getItem('levi_dev');if(raw){S=JSON.parse(raw);if(!S.goals)S.goals=DEFAULT_STATE.goals;if(!S.entries)S.entries=[];
-    // Migrate: add tier/reminder to old goals
-    S.goals.forEach(g=>{if(!g.tier)g.tier='longterm';if(!g.reminder)g.reminder='none';});
+    // Migrate: add tier/reminder/flagged to old goals, quickTags
+    S.goals.forEach(g=>{if(!g.tier)g.tier='longterm';if(!g.reminder)g.reminder='none';if(g.flagged===undefined)g.flagged=false;});
+    if(!S.quickTags)S.quickTags=DEFAULT_STATE.quickTags;
   }else{S=JSON.parse(JSON.stringify(DEFAULT_STATE))}}
   catch(e){S=JSON.parse(JSON.stringify(DEFAULT_STATE))}
 }
@@ -323,30 +325,153 @@ function initTabs(){
 }
 
 function renderTab(tab){
-  if(tab==='log') renderLog();
-  else if(tab==='insights') renderInsights();
+  if(tab==='log') renderDashboard();
   else renderCategory(tab);
 }
 
-// ── Daily Log ──
-function renderLog(){
-  const el=document.getElementById('log-list');
+// ── Dashboard ──
+function renderDashboard(){
+  const alertsEl=document.getElementById('dash-alerts');
+  let alertsHtml='';
+
+  // Flagged goals — manual priority picks
+  const flagged=S.goals.filter(g=>g.status==='active'&&g.flagged);
+  if(flagged.length){
+    const flagCards=flagged.map(g=>{
+      const cat=catById(g.cat);
+      const lastNote=g.notes&&g.notes.length?g.notes[g.notes.length-1]:null;
+      const noteInfo=lastNote?'Last: '+fmtDate(lastNote.date):'No notes yet';
+      return `<div class="goal-item card cat-${g.cat}" onclick="viewGoal('${g.id}')" style="margin-bottom:4px">
+        <div class="goal-text">
+          <div style="font-size:11px;color:${cat.color};font-weight:600">${cat.icon} ${cat.name}</div>
+          <div class="goal-title"><span style="color:#7c4dff">⚑</span> ${esc(g.title)}</div>
+          <div style="font-size:10px;color:#888;margin-top:2px">${noteInfo}</div>
+        </div>
+      </div>`;
+    });
+    alertsHtml+=`<div style="margin-bottom:14px">
+      <div style="font-size:12px;font-weight:700;color:#7c4dff;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">⚑ Priority (${flagged.length})</div>
+      ${flagCards.join('')}
+    </div>`;
+  }
+
+  // Needs attention — reminder-overdue, collapsible
+  const dueGoals=S.goals.filter(g=>g.status==='active'&&!g.flagged&&isReminderDue(g));
+  if(dueGoals.length){
+    const dueCards=dueGoals.map(g=>{
+      const cat=catById(g.cat);
+      const lastNote=g.notes&&g.notes.length?g.notes[g.notes.length-1]:null;
+      const ago=lastNote?daysAgo(lastNote.date)+' days ago':'never logged';
+      return `<div class="goal-item card cat-${g.cat}" onclick="viewGoal('${g.id}')" style="margin-bottom:4px">
+        <div class="goal-text">
+          <div style="font-size:11px;color:${cat.color};font-weight:600">${cat.icon} ${cat.name}</div>
+          <div class="goal-title">${esc(g.title)}</div>
+          <div style="font-size:10px;color:#f39c12;margin-top:2px">Last update: ${ago}</div>
+        </div>
+      </div>`;
+    });
+    alertsHtml+=renderCollapsible('dash_due','Needs Attention ('+dueGoals.length+')',dueCards,3);
+  }
+
+  if(!flagged.length&&!dueGoals.length&&S.goals.filter(g=>g.status==='active').length){
+    alertsHtml='<div class="card" style="margin-bottom:14px;text-align:center;color:#2ecc71;font-size:13px;font-weight:600">All caught up ✓</div>';
+  }
+
+  alertsEl.innerHTML=alertsHtml;
+  if(_expandedSections.has('dash_due')){
+    const o=document.getElementById('sec-overflow-dash_due');
+    const t=document.getElementById('sec-toggle-dash_due');
+    if(o)o.style.display='block';
+    if(t)t.textContent='collapse';
+  }
+
+  // Stats
+  const totalEntries=S.entries.length;
+  const activeGoals=S.goals.filter(g=>g.status==='active').length;
+  const completedGoals=S.goals.filter(g=>g.status==='done').length;
+
+  // Reading streak
+  const readingDates=new Set();
+  S.entries.forEach(e=>{if(e.items.some(i=>i.cat==='reading'))readingDates.add(e.date)});
+  let readStreak=0;
+  let d=new Date();
+  while(true){
+    const ds=d.toISOString().slice(0,10);
+    if(readingDates.has(ds)){readStreak++;d.setDate(d.getDate()-1)}
+    else break;
+  }
+
+  // Books
+  const books=new Set();
+  S.entries.forEach(e=>e.items.forEach(i=>{if(i.book)books.add(i.book)}));
+
+  document.getElementById('dash-stats').innerHTML=`
+    <div class="stat-grid" style="margin-bottom:14px">
+      <div class="stat-card"><div class="stat-val">${totalEntries}</div><div class="stat-lbl">Entries</div></div>
+      <div class="stat-card"><div class="stat-val">${readStreak}</div><div class="stat-lbl">Reading Streak</div></div>
+      <div class="stat-card"><div class="stat-val">${books.size}</div><div class="stat-lbl">Books</div></div>
+      <div class="stat-card"><div class="stat-val">${completedGoals}/${completedGoals+activeGoals}</div><div class="stat-lbl">Goals Done</div></div>
+    </div>`;
+
+  // 30-day streak
+  const last30=[];
+  const now=new Date();
+  for(let i=29;i>=0;i--){
+    const dt=new Date(now);
+    dt.setDate(dt.getDate()-i);
+    const ds=dt.toISOString().slice(0,10);
+    const hasEntry=S.entries.some(e=>e.date===ds);
+    last30.push({date:ds,hit:hasEntry,isToday:i===0});
+  }
+  document.getElementById('dash-streak').innerHTML=`
+    <div class="streak-bar" style="margin-bottom:14px">
+      <div class="streak-title">Last 30 Days</div>
+      <div class="streak-dots">
+        ${last30.map(x=>`<div class="streak-dot${x.hit?' hit':''}${x.isToday?' today':''}" title="${x.date}"></div>`).join('')}
+      </div>
+    </div>`;
+
+  // Behavior trend
+  const moodEntries=[];
+  S.entries.forEach(e=>{
+    e.items.forEach(i=>{
+      if(i.cat==='behavior'&&i.mood)moodEntries.push({date:e.date,mood:i.mood});
+    });
+  });
+  if(moodEntries.length>=3){
+    const recent=moodEntries.slice(-5);
+    const moodScore={great:5,good:4,okay:3,rough:2,tough:1};
+    const avg=recent.reduce((s,m)=>s+(moodScore[m.mood]||3),0)/recent.length;
+    const trend=avg>=4?'Trending great 😄':avg>=3?'Mostly good 🙂':avg>=2?'Some rough patches 😟':'Tough stretch 😤';
+    document.getElementById('dash-trend').innerHTML=`<div class="card" style="margin-bottom:14px"><div class="card-title">Behavior</div><div style="font-size:13px;margin-top:4px">${trend}</div></div>`;
+  }else{
+    document.getElementById('dash-trend').innerHTML='';
+  }
+
+  // Recent entries
   const sorted=[...S.entries].sort((a,b)=>b.date.localeCompare(a.date));
+  const entriesEl=document.getElementById('dash-entries');
   if(!sorted.length){
-    el.innerHTML='<div class="empty"><div class="empty-icon">📝</div><div class="empty-text">No entries yet. Tap + New Entry to log tonight.</div></div>';
+    entriesEl.innerHTML='';
     return;
   }
-  const cards=sorted.map(e=>{
+  const entryCards=sorted.map(e=>{
     const cats=[...new Set(e.items.map(i=>i.cat))];
     const tags=cats.map(c=>{const cat=catById(c);return `<span class="log-tag bg-${c}" style="color:${cat.color}">${cat.icon} ${cat.name}</span>`}).join('');
-    const itemPreview=e.items.slice(0,3).map(i=>esc(i.text)).join(' · ');
+    const itemPreview=e.items.slice(0,3).map(i=>{
+      const parts=[];
+      if(i.tags&&i.tags.length)parts.push(i.tags.join(', '));
+      if(i.text)parts.push(i.text);
+      if(i.book)parts.push('📖 '+i.book);
+      return esc(parts.join(' — '))||esc(i.mood||'');
+    }).join(' · ');
     return `<div class="log-entry" onclick="viewEntry('${e.id}')">
       <div class="log-date">${fmtDate(e.date)}</div>
       <div style="font-size:12px;color:#999;margin-top:2px">${esc(itemPreview)}${e.items.length>3?' ...':''}</div>
       <div class="log-tags">${tags}</div>
     </div>`;
   });
-  el.innerHTML=renderCollapsible('dailylog','Entries',cards,3);
+  entriesEl.innerHTML=renderCollapsible('dailylog','Recent Entries',entryCards,2);
   if(_expandedSections.has('dailylog')){
     const o=document.getElementById('sec-overflow-dailylog');
     const t=document.getElementById('sec-toggle-dailylog');
@@ -360,9 +485,11 @@ function viewEntry(id){
   if(!e)return;
   const items=e.items.map(i=>{
     const cat=catById(i.cat);
+    const tagHtml=i.tags&&i.tags.length?`<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px">${i.tags.map(t=>`<span style="font-size:10px;background:#3a3a3a;padding:2px 6px;border-radius:4px">${esc(t)}</span>`).join('')}</div>`:'';
     return `<div class="card cat-${i.cat}" style="margin-bottom:6px">
       <div style="font-size:11px;font-weight:600;margin-bottom:4px" class="color-${i.cat}">${cat.icon} ${cat.name}</div>
-      <div style="font-size:13px">${esc(i.text)}</div>
+      ${tagHtml}
+      ${i.text?`<div style="font-size:13px;margin-top:4px">${esc(i.text)}</div>`:''}
       ${i.book?`<div style="font-size:11px;color:#888;margin-top:4px">📖 ${esc(i.book)}</div>`:''}
       ${i.mood?`<div style="font-size:11px;margin-top:4px">${moodEmoji(i.mood)} ${i.mood}</div>`:''}
     </div>`;
@@ -379,7 +506,7 @@ function viewEntry(id){
 function deleteEntry(id){
   if(!confirm('Delete this entry?'))return;
   S.entries=S.entries.filter(e=>e.id!==id);
-  saveState();closeModal();renderLog();toast('Entry deleted');
+  saveState();closeModal();renderDashboard();toast('Entry deleted');
 }
 
 function moodEmoji(m){
@@ -390,28 +517,64 @@ function moodEmoji(m){
 // ── New Entry Form ──
 document.getElementById('btn-new-entry').addEventListener('click',()=>openEntryForm());
 
+function getPastBooks(){
+  const books=[];
+  S.entries.forEach(e=>e.items.forEach(i=>{if(i.book&&!books.includes(i.book))books.push(i.book)}));
+  return books;
+}
+
+function buildQuickTags(catId,existingTags){
+  const tags=S.quickTags&&S.quickTags[catId]?S.quickTags[catId]:[];
+  if(!tags.length)return '';
+  const selected=new Set(existingTags||[]);
+  return `<label>Quick tags</label>
+    <div class="chip-row qt-row" data-cat="${catId}">
+      ${tags.map(t=>`<span class="chip ${selected.has(t)?'on':''}" data-tag="${esc(t)}">${esc(t)}</span>`).join('')}
+    </div>
+    <div style="display:flex;gap:4px;margin-top:4px">
+      <input type="text" class="qt-new" data-cat="${catId}" placeholder="+ custom tag" style="font-size:11px;padding:6px">
+      <button class="btn btn-sm btn-secondary qt-add-btn" data-cat="${catId}" style="white-space:nowrap">Add</button>
+    </div>`;
+}
+
 function openEntryForm(existing){
   const e=existing||{id:null,date:today(),items:[],summary:''};
   const isEdit=!!existing;
 
-  // Figure out which cats are active
   const activeCats=new Set(e.items.map(i=>i.cat));
 
   let catChips=CATS.map(c=>`<span class="chip chip-${c.id} ${activeCats.has(c.id)?'on':''}" data-cat="${c.id}">${c.icon} ${c.name}</span>`).join('');
 
+  const pastBooks=getPastBooks();
+
   let catSections=CATS.map(c=>{
     const item=e.items.find(i=>i.cat===c.id)||{};
-    const extra=c.id==='reading'?`<label>Book title</label><input type="text" class="cat-book" data-cat="${c.id}" value="${esc(item.book||'')}" placeholder="What did you read?">`:'';
+    const existingTags=item.tags||[];
+
+    // Reading: book field with datalist autocomplete
+    let extra='';
+    if(c.id==='reading'){
+      extra=`<label>Book title</label>
+        <input type="text" class="cat-book" data-cat="${c.id}" value="${esc(item.book||'')}" placeholder="What did you read?" list="book-list" autocomplete="off">
+        <datalist id="book-list">${pastBooks.map(b=>`<option value="${esc(b)}">`).join('')}</datalist>`;
+    }
+
+    // Quick tags for speech, behavior, selfcare
+    const quickTagHtml=buildQuickTags(c.id,existingTags);
+
+    // Mood for behavior
     const moodOpts=c.id==='behavior'?`<label>How was today?</label>
-      <div class="rating-row" data-cat="${c.id}" style="display:flex;gap:6px;margin:4px 0">
+      <div class="rating-row" data-cat="${c.id}" style="display:flex;gap:6px;margin:4px 0;flex-wrap:wrap">
         ${['great','good','okay','rough','tough'].map(m=>`<span class="chip ${item.mood===m?'on':''}" data-mood="${m}">${moodEmoji(m)} ${m}</span>`).join('')}
       </div>`:'';
+
     return `<div class="cat-section bg-${c.id} ${activeCats.has(c.id)?'visible':''}" data-cat="${c.id}">
       <h4 class="color-${c.id}">${c.icon} ${c.name}</h4>
       ${extra}
+      ${quickTagHtml}
       ${moodOpts}
-      <label>Notes</label>
-      <textarea class="cat-notes" data-cat="${c.id}" placeholder="What happened today?">${esc(item.text||'')}</textarea>
+      <label>Notes (optional)</label>
+      <textarea class="cat-notes" data-cat="${c.id}" placeholder="Anything specific?">${esc(item.text||'')}</textarea>
     </div>`;
   }).join('');
 
@@ -425,13 +588,43 @@ function openEntryForm(existing){
     <textarea id="entry-summary" placeholder="Anything else about today?">${esc(e.summary||'')}</textarea>
     <button class="btn btn-primary btn-block" id="btn-save-entry">${isEdit?'Update':'Save'} Entry</button>`);
 
-  // Chip toggles
+  // Category chip toggles
   document.querySelectorAll('#cat-chips .chip').forEach(chip=>{
     chip.addEventListener('click',()=>{
       chip.classList.toggle('on');
       const cat=chip.dataset.cat;
       const section=document.querySelector(`.cat-section[data-cat="${cat}"]`);
       section.classList.toggle('visible',chip.classList.contains('on'));
+    });
+  });
+
+  // Quick tag chip toggles (multi-select)
+  document.querySelectorAll('.qt-row .chip').forEach(chip=>{
+    chip.addEventListener('click',()=>chip.classList.toggle('on'));
+  });
+
+  // Add custom quick tag buttons
+  document.querySelectorAll('.qt-add-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const cat=btn.dataset.cat;
+      const input=document.querySelector(`.qt-new[data-cat="${cat}"]`);
+      const val=input.value.trim();
+      if(!val)return;
+      if(!S.quickTags[cat])S.quickTags[cat]=[];
+      if(!S.quickTags[cat].includes(val)){
+        S.quickTags[cat].push(val);
+        saveState();
+      }
+      // Add chip to row as selected
+      const row=document.querySelector(`.qt-row[data-cat="${cat}"]`);
+      const newChip=document.createElement('span');
+      newChip.className='chip on';
+      newChip.dataset.tag=val;
+      newChip.textContent=val;
+      newChip.addEventListener('click',()=>newChip.classList.toggle('on'));
+      row.appendChild(newChip);
+      input.value='';
+      toast('Tag added');
     });
   });
 
@@ -459,12 +652,15 @@ function openEntryForm(existing){
       const moodRow=document.querySelector(`.rating-row[data-cat="${cat}"]`);
       const moodChip=moodRow?moodRow.querySelector('.chip.on'):null;
       const mood=moodChip?moodChip.dataset.mood:'';
-      if(notes||book||mood){
-        items.push({cat,text:notes,book,mood});
+      // Gather selected quick tags
+      const tags=[];
+      document.querySelectorAll(`.qt-row[data-cat="${cat}"] .chip.on`).forEach(tc=>tags.push(tc.dataset.tag));
+      if(notes||book||mood||tags.length){
+        items.push({cat,text:notes,book,mood,tags});
       }
     });
 
-    if(!items.length){toast('Add notes to at least one category',true);return}
+    if(!items.length){toast('Add notes or tags to at least one category',true);return}
 
     const summary=document.getElementById('entry-summary').value.trim();
 
@@ -474,7 +670,7 @@ function openEntryForm(existing){
     }else{
       S.entries.push({id:uid(),date,items,summary});
     }
-    saveState();closeModal();renderLog();
+    saveState();closeModal();renderDashboard();
     toast(isEdit?'Entry updated':'Entry saved');
   });
 }
@@ -488,6 +684,7 @@ function editEntry(id){
 // ── Category Pages ──
 function renderCategory(cat){
   renderGoals(cat);
+  if(cat==='behavior')renderBehaviorInsights(cat);
   renderHistory(cat);
 }
 
@@ -498,7 +695,7 @@ function renderGoalCard(g,cat){
   const isDone=g.status==='done';
   return `<div class="goal-item card cat-${cat}${isDone?' done':''}" onclick="viewGoal('${g.id}')" style="${isDone?'opacity:.5':''}">
     <div class="goal-text">
-      <div class="goal-title">${esc(g.title)}${due?' <span style="color:#f39c12;font-size:10px;font-weight:700">● NEEDS UPDATE</span>':''}</div>
+      <div class="goal-title">${g.flagged?'<span style="color:#7c4dff">⚑ </span>':''}${esc(g.title)}${due?' <span style="color:#f39c12;font-size:10px;font-weight:700">● NEEDS UPDATE</span>':''}</div>
       ${!isDone?`<div class="goal-desc">${esc(g.desc)}</div>`:''}
       ${lastNote&&!isDone?`<div class="goal-notes">Latest: ${esc(lastNote.text)} (${fmtDate(lastNote.date)})</div>`:''}
       ${noteCount&&!isDone?`<div style="font-size:10px;color:#666;margin-top:2px">${noteCount} note${noteCount>1?'s':''}${g.reminder&&g.reminder!=='none'?' · remind '+g.reminder:''}</div>`:''}
@@ -579,6 +776,73 @@ function renderGoals(cat){
   });
 }
 
+function renderBehaviorInsights(){
+  const el=document.getElementById('behavior-insights');
+  const moodColors={great:'#2ecc71',good:'#7c4dff',okay:'#888',rough:'#f39c12',tough:'#e74c3c'};
+
+  // Build 30-day mood grid
+  const last30=[];
+  const now=new Date();
+  const behaviorByDate={};
+  S.entries.forEach(e=>{
+    e.items.forEach(i=>{
+      if(i.cat==='behavior'){
+        behaviorByDate[e.date]={mood:i.mood,tags:i.tags||[]};
+      }
+    });
+  });
+
+  for(let i=29;i>=0;i--){
+    const dt=new Date(now);
+    dt.setDate(dt.getDate()-i);
+    const ds=dt.toISOString().slice(0,10);
+    const entry=behaviorByDate[ds];
+    last30.push({date:ds,mood:entry?entry.mood:null,tags:entry?entry.tags:[],isToday:i===0});
+  }
+
+  // Count tag occurrences in last 30 days
+  const tagCounts={};
+  last30.forEach(d=>{
+    d.tags.forEach(t=>{tagCounts[t]=(tagCounts[t]||0)+1});
+  });
+  const sortedTags=Object.entries(tagCounts).sort((a,b)=>b[1]-a[1]);
+
+  const dots=last30.map(d=>{
+    const color=d.mood?moodColors[d.mood]||'#3a3a3a':'#3a3a3a';
+    const tagList=d.tags.length?d.tags.join(', '):'';
+    const title=d.date+(d.mood?' — '+d.mood:'')+(tagList?' ('+tagList+')':'');
+    return `<div class="streak-dot${d.isToday?' today':''}" style="background:${color}" title="${esc(title)}"></div>`;
+  }).join('');
+
+  const legend=['great','good','okay','rough','tough'].map(m=>
+    `<span style="display:inline-flex;align-items:center;gap:3px;font-size:10px;color:#888"><span style="width:10px;height:10px;border-radius:2px;background:${moodColors[m]};display:inline-block"></span>${m}</span>`
+  ).join(' ');
+
+  let tagSummary='';
+  if(sortedTags.length){
+    tagSummary=`<div style="margin-top:10px">
+      <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:6px">Top issues (last 30 days)</div>
+      ${sortedTags.map(([tag,count])=>{
+        const pct=Math.round(count/30*100);
+        return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span style="font-size:12px;min-width:120px">${esc(tag)}</span>
+          <div style="flex:1;height:6px;background:#3a3a3a;border-radius:3px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;background:#f39c12;border-radius:3px"></div>
+          </div>
+          <span style="font-size:11px;color:#888;min-width:20px;text-align:right">${count}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  el.innerHTML=`<div class="streak-bar" style="margin:14px 0">
+    <div class="streak-title">Last 30 Days — Mood</div>
+    <div class="streak-dots">${dots}</div>
+    <div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap">${legend}</div>
+    ${tagSummary}
+  </div>`;
+}
+
 function renderHistory(cat){
   const el=document.getElementById(cat+'-history');
   const items=[];
@@ -594,12 +858,16 @@ function renderHistory(cat){
     return;
   }
 
-  const histCards=items.map(i=>`<div class="hist-item">
+  const histCards=items.map(i=>{
+    const tagHtml=i.tags&&i.tags.length?`<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:3px">${i.tags.map(t=>`<span style="font-size:10px;background:#3a3a3a;padding:2px 6px;border-radius:4px">${esc(t)}</span>`).join('')}</div>`:'';
+    return `<div class="hist-item">
     <div class="hist-date">${fmtDate(i.date)}</div>
-    <div class="hist-text">${esc(i.text)}</div>
+    ${tagHtml}
+    ${i.text?`<div class="hist-text">${esc(i.text)}</div>`:''}
     ${i.book?`<div style="font-size:11px;color:#3498db;margin-top:2px">📖 ${esc(i.book)}</div>`:''}
     ${i.mood?`<div class="hist-mood">${moodEmoji(i.mood)} ${i.mood}</div>`:''}
-  </div>`);
+  </div>`;
+  });
 
   const hKey=cat+'_history';
   el.innerHTML=renderCollapsible(hKey,'Daily Log',histCards,3);
@@ -628,8 +896,9 @@ function viewGoal(id){
       <span style="font-size:10px;padding:3px 8px;border-radius:10px;background:#252525;color:#888">${tierLabel}</span>
       <span style="font-size:10px;padding:3px 8px;border-radius:10px;background:${due?'#3a2a10':'#252525'};color:${due?'#f39c12':'#888'}">${due?'● ':''} ${reminderLabel}</span>
     </div>
-    <div style="margin-bottom:12px">
-      <button class="btn btn-sm ${g.status==='active'?'btn-primary':'btn-secondary'}" onclick="toggleGoalStatus('${g.id}')" style="min-width:140px">${g.status==='active'?'Mark Complete ✓':'↩ Reactivate'}</button>
+    <div style="display:flex;gap:6px;margin-bottom:12px">
+      <button class="btn btn-sm ${g.status==='active'?'btn-primary':'btn-secondary'}" onclick="toggleGoalStatus('${g.id}')" style="min-width:120px">${g.status==='active'?'Mark Complete ✓':'↩ Reactivate'}</button>
+      <button class="btn btn-sm ${g.flagged?'btn-primary':'btn-secondary'}" onclick="toggleFlag('${g.id}')" style="min-width:90px">${g.flagged?'⚑ Flagged':'⚐ Flag'}</button>
     </div>
     <label>Add a progress note</label>
     <div style="display:flex;gap:6px">
@@ -649,10 +918,20 @@ function toggleGoalStatus(id){
   const g=S.goals.find(x=>x.id===id);
   if(!g)return;
   g.status=g.status==='active'?'done':'active';
+  if(g.status==='done')g.flagged=false;
   saveState();
   document.getElementById('modal-overlay').classList.remove('show');
   renderCategory(g.cat);
   toast(g.status==='done'?'Goal completed!':'Goal reactivated');
+}
+
+function toggleFlag(id){
+  const g=S.goals.find(x=>x.id===id);
+  if(!g)return;
+  g.flagged=!g.flagged;
+  saveState();
+  viewGoal(id);
+  toast(g.flagged?'Goal flagged':'Flag removed');
 }
 
 function addGoalNote(id){
@@ -739,108 +1018,6 @@ function deleteGoal(id){
   saveState();closeModal();if(cat)renderCategory(cat);toast('Goal deleted');
 }
 
-// ── Insights ──
-function renderInsights(){
-  const el=document.getElementById('insights-content');
-  const totalEntries=S.entries.length;
-  if(!totalEntries){
-    el.innerHTML='<div class="empty"><div class="empty-icon">📊</div><div class="empty-text">Start logging to see insights here.</div></div>';
-    return;
-  }
-
-  // Basic stats
-  const sorted=[...S.entries].sort((a,b)=>a.date.localeCompare(b.date));
-  const firstDate=sorted[0].date;
-  const daysSinceStart=daysAgo(firstDate)+1;
-  const activeGoals=S.goals.filter(g=>g.status==='active').length;
-  const completedGoals=S.goals.filter(g=>g.status==='done').length;
-
-  // Reading streak
-  const readingDates=new Set();
-  S.entries.forEach(e=>{if(e.items.some(i=>i.cat==='reading'))readingDates.add(e.date)});
-  let readStreak=0;
-  let d=new Date();
-  while(true){
-    const ds=d.toISOString().slice(0,10);
-    if(readingDates.has(ds)){readStreak++;d.setDate(d.getDate()-1)}
-    else break;
-  }
-
-  // Category frequency
-  const catCounts={};
-  CATS.forEach(c=>catCounts[c.id]=0);
-  S.entries.forEach(e=>e.items.forEach(i=>catCounts[i.cat]=(catCounts[i.cat]||0)+1));
-
-  // Books read
-  const books=new Set();
-  S.entries.forEach(e=>e.items.forEach(i=>{if(i.book)books.add(i.book)}));
-
-  // Last 30 days streak visualization
-  const last30=[];
-  const now=new Date();
-  for(let i=29;i>=0;i--){
-    const dt=new Date(now);
-    dt.setDate(dt.getDate()-i);
-    const ds=dt.toISOString().slice(0,10);
-    const hasEntry=S.entries.some(e=>e.date===ds);
-    last30.push({date:ds,hit:hasEntry,isToday:i===0});
-  }
-
-  // Category with most attention
-  const topCat=CATS.reduce((a,b)=>catCounts[a.id]>=catCounts[b.id]?a:b);
-
-  // Behavior mood trend
-  const moodEntries=[];
-  S.entries.forEach(e=>{
-    e.items.forEach(i=>{
-      if(i.cat==='behavior'&&i.mood)moodEntries.push({date:e.date,mood:i.mood});
-    });
-  });
-
-  let html=`
-    <div class="stat-grid">
-      <div class="stat-card"><div class="stat-val">${totalEntries}</div><div class="stat-lbl">Total Entries</div></div>
-      <div class="stat-card"><div class="stat-val">${readStreak}</div><div class="stat-lbl">Reading Streak</div></div>
-      <div class="stat-card"><div class="stat-val">${books.size}</div><div class="stat-lbl">Books Read</div></div>
-      <div class="stat-card"><div class="stat-val">${activeGoals}</div><div class="stat-lbl">Active Goals</div></div>
-    </div>
-
-    <div class="streak-bar">
-      <div class="streak-title">Last 30 Days</div>
-      <div class="streak-dots">
-        ${last30.map(d=>`<div class="streak-dot${d.hit?' hit':''}${d.isToday?' today':''}" title="${d.date}"></div>`).join('')}
-      </div>
-    </div>
-
-    <div class="card" style="margin-bottom:10px">
-      <div class="card-title">Category Breakdown</div>
-      ${CATS.map(c=>{
-        const count=catCounts[c.id]||0;
-        const pct=totalEntries?Math.round(count/totalEntries*100):0;
-        return `<div style="display:flex;align-items:center;gap:8px;margin-top:8px">
-          <span style="font-size:12px;min-width:90px" class="color-${c.id}">${c.icon} ${c.name}</span>
-          <div style="flex:1;height:6px;background:#3a3a3a;border-radius:3px;overflow:hidden">
-            <div style="width:${pct}%;height:100%;background:${c.color};border-radius:3px"></div>
-          </div>
-          <span style="font-size:11px;color:#888;min-width:30px;text-align:right">${count}</span>
-        </div>`;
-      }).join('')}
-    </div>`;
-
-  if(completedGoals){
-    html+=`<div class="card"><div class="card-title" style="color:#2ecc71">🎉 ${completedGoals} Goal${completedGoals>1?'s':''} Completed</div></div>`;
-  }
-
-  if(moodEntries.length>=3){
-    const recent=moodEntries.slice(-5);
-    const moodScore={great:5,good:4,okay:3,rough:2,tough:1};
-    const avg=recent.reduce((s,m)=>s+(moodScore[m.mood]||3),0)/recent.length;
-    const trend=avg>=4?'Trending great 😄':avg>=3?'Mostly good 🙂':avg>=2?'Some rough patches 😟':'Tough stretch 😤';
-    html+=`<div class="card"><div class="card-title">Behavior Trend</div><div style="font-size:13px;margin-top:4px">${trend} (last ${recent.length} entries)</div></div>`;
-  }
-
-  el.innerHTML=html;
-}
 
 // ── Modal ──
 function showModal(html){
@@ -889,7 +1066,7 @@ document.getElementById('import-file').addEventListener('change',e=>{
 // ── Init ──
 loadState();
 initTabs();
-renderLog();
+renderDashboard();
 </script>
 </body>
 </html>
