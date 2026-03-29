@@ -267,13 +267,75 @@ const CATS=[
 function catById(id){return CATS.find(c=>c.id===id)}
 
 // ── State ──
+// Tag val: 1=positive, 0=neutral, -1=negative
+// goalTitles used at init to resolve to goalIds
+const DEFAULT_TAGS={
+  speech:[
+    {text:'Practiced sound',val:1,goalTitles:['Clear "th" sounds','Clear "r" sounds','Clear "l" sounds','Multi-syllable words']},
+    {text:'Read the sound',val:1,goalTitles:['Clear "th" sounds','Clear "r" sounds','Clear "l" sounds']},
+    {text:'Speech therapy',val:1,goalTitles:['Clear "th" sounds','Clear "r" sounds','Clear "l" sounds','Multi-syllable words']},
+    {text:'New word clear',val:1,goalTitles:['Multi-syllable words']},
+    {text:'Conversation practice',val:1,goalTitles:['Clear "th" sounds','Clear "r" sounds','Clear "l" sounds']},
+    {text:'Hard to understand',val:-1,goalTitles:['Clear "th" sounds','Clear "r" sounds','Clear "l" sounds','Multi-syllable words']},
+    {text:"Wouldn't try",val:-1,goalTitles:['Clear "th" sounds','Clear "r" sounds','Clear "l" sounds']},
+  ],
+  behavior:[
+    {text:'Great day',val:1,goalTitles:['Tantrum management','Listening first time','Patience / waiting']},
+    {text:'Listened first time',val:1,goalTitles:['Listening first time']},
+    {text:'Waited patiently',val:1,goalTitles:['Patience / waiting']},
+    {text:'Used words not yelling',val:1,goalTitles:['Tantrum management']},
+    {text:"Wouldn't eat",val:-1,goalTitles:[]},
+    {text:'Threw a tantrum',val:-1,goalTitles:['Tantrum management']},
+    {text:'Bad at school',val:-1,goalTitles:[]},
+    {text:"Didn't listen",val:-1,goalTitles:['Listening first time']},
+    {text:'Bedtime resistance',val:-1,goalTitles:['Listening first time']},
+    {text:'Hitting/pushing',val:-1,goalTitles:['Tantrum management']},
+    {text:'Whining',val:-1,goalTitles:['Patience / waiting']},
+  ],
+  selfcare:[
+    {text:'Wiped well',val:1,goalTitles:['Wiping independently']},
+    {text:'Needed help wiping',val:-1,goalTitles:['Wiping independently']},
+    {text:'Dressed self',val:1,goalTitles:['Dressing independently']},
+    {text:'Needed help dressing',val:-1,goalTitles:['Dressing independently']},
+    {text:'Brushed teeth well',val:1,goalTitles:['Teeth brushing']},
+    {text:'Needed teeth reminder',val:-1,goalTitles:['Teeth brushing']},
+    {text:'Washed hands unprompted',val:1,goalTitles:['Hand washing']},
+    {text:'Needed handwash reminder',val:-1,goalTitles:['Hand washing']},
+    {text:'Bath/shower independent',val:1,goalTitles:[]},
+  ],
+  reading:[
+    {text:'Sounded out a word',val:1,goalTitles:['Letter sounds']},
+    {text:'Recognized a sight word',val:1,goalTitles:['Sight words']},
+    {text:'Named a letter',val:1,goalTitles:['Recognize alphabet letters']},
+    {text:'Read along with me',val:1,goalTitles:['Nightly reading habit']},
+    {text:"Didn't want to read",val:-1,goalTitles:['Nightly reading habit']},
+    {text:'Distracted during reading',val:-1,goalTitles:['Nightly reading habit']},
+  ],
+  academics:[
+    {text:'Counted correctly',val:1,goalTitles:['Count to 20']},
+    {text:'Named a number',val:1,goalTitles:['Number recognition']},
+    {text:'Named a shape',val:1,goalTitles:['Basic shapes']},
+    {text:'Named colors correctly',val:1,goalTitles:['Colors']},
+    {text:'Practiced writing name',val:1,goalTitles:['Write his name']},
+    {text:'Struggled with counting',val:-1,goalTitles:['Count to 20']},
+    {text:'Mixed up numbers',val:-1,goalTitles:['Number recognition']},
+    {text:"Didn't want to practice",val:-1,goalTitles:[]},
+  ],
+  social:[
+    {text:'Shared well',val:1,goalTitles:['Sharing with others']},
+    {text:'Played cooperatively',val:1,goalTitles:['Sharing with others','Kindergarten readiness']},
+    {text:'Followed group instructions',val:1,goalTitles:['Kindergarten readiness']},
+    {text:'Good in public',val:1,goalTitles:['City adjustment']},
+    {text:'Fought over toys',val:-1,goalTitles:['Sharing with others']},
+    {text:'Shy/withdrawn',val:-1,goalTitles:['City adjustment']},
+    {text:"Wouldn't share",val:-1,goalTitles:['Sharing with others']},
+    {text:'Trouble in group setting',val:-1,goalTitles:['Kindergarten readiness']},
+  ],
+};
+
 const DEFAULT_STATE={
   entries:[],
-  quickTags:{
-    speech:['Practiced sound','Read the sound','Speech therapy','New word clear','Conversation practice'],
-    behavior:["Wouldn't eat",'Threw a tantrum','Bad at school',"Didn't listen",'Bedtime resistance','Hitting/pushing','Whining','Great day'],
-    selfcare:['Wiped well','Needed help wiping','Dressed self','Brushed teeth well','Needed teeth reminder','Washed hands unprompted','Bath/shower independent'],
-  },
+  quickTags:{},
   goals:[
     // Speech — all longterm, these take months
     {id:uid(),cat:'speech',title:'Clear "th" sounds',desc:'Says "the/that/this" instead of "da/dat/dis"',status:'active',tier:'longterm',reminder:'monthly',notes:[]},
@@ -308,13 +370,114 @@ const DEFAULT_STATE={
 };
 
 let S;
+
+// Resolve goalTitles to goalIds using current goals
+function resolveTagGoals(tags,goals){
+  return tags.map(t=>{
+    if(t.goalIds)return t; // already resolved
+    const ids=(t.goalTitles||[]).map(title=>{
+      const g=goals.find(g=>g.title===title);
+      return g?g.id:null;
+    }).filter(Boolean);
+    return {text:t.text,val:t.val||0,goalIds:ids};
+  });
+}
+
+function initQuickTags(){
+  // Build quickTags from defaults, resolving goalTitles to goalIds
+  const qt={};
+  for(const cat in DEFAULT_TAGS){
+    qt[cat]=resolveTagGoals(DEFAULT_TAGS[cat],S.goals);
+  }
+  return qt;
+}
+
 function loadState(){
   try{const raw=localStorage.getItem('levi_dev');if(raw){S=JSON.parse(raw);if(!S.goals)S.goals=DEFAULT_STATE.goals;if(!S.entries)S.entries=[];
-    // Migrate: add tier/reminder/flagged to old goals, quickTags
+    // Migrate: add tier/reminder/flagged to old goals
     S.goals.forEach(g=>{if(!g.tier)g.tier='longterm';if(!g.reminder)g.reminder='none';if(g.flagged===undefined)g.flagged=false;});
-    if(!S.quickTags)S.quickTags=DEFAULT_STATE.quickTags;
-  }else{S=JSON.parse(JSON.stringify(DEFAULT_STATE))}}
-  catch(e){S=JSON.parse(JSON.stringify(DEFAULT_STATE))}
+    // Migrate quickTags: old string arrays → objects with val/goalIds
+    if(!S.quickTags||Array.isArray(Object.values(S.quickTags)[0])){
+      // Old format or missing — check if strings
+      const oldQt=S.quickTags||{};
+      S.quickTags=initQuickTags();
+      // Preserve any custom tags user added that aren't in defaults
+      for(const cat in oldQt){
+        if(!oldQt[cat])continue;
+        oldQt[cat].forEach(t=>{
+          const txt=typeof t==='string'?t:t.text;
+          if(!S.quickTags[cat])S.quickTags[cat]=[];
+          if(!S.quickTags[cat].some(qt=>qt.text===txt)){
+            S.quickTags[cat].push({text:txt,val:typeof t==='object'?t.val:0,goalIds:typeof t==='object'&&t.goalIds?t.goalIds:[]});
+          }
+        });
+      }
+    }
+    // Migrate entry tags: old string arrays → objects with val
+    S.entries.forEach(e=>{
+      e.items.forEach(item=>{
+        if(item.tags&&item.tags.length&&typeof item.tags[0]==='string'){
+          item.tags=item.tags.map(t=>{
+            // Look up val from quickTags
+            const qt=S.quickTags[item.cat];
+            const def=qt?qt.find(q=>q.text===t):null;
+            return {text:t,val:def?def.val:0};
+          });
+        }
+      });
+    });
+  }else{
+    S=JSON.parse(JSON.stringify(DEFAULT_STATE));
+    S.quickTags=initQuickTags();
+  }}
+  catch(e){
+    S=JSON.parse(JSON.stringify(DEFAULT_STATE));
+    S.quickTags=initQuickTags();
+  }
+}
+
+// Helper: get tag val from quickTags definition
+function getTagVal(cat,text){
+  const qt=S.quickTags[cat];
+  if(!qt)return 0;
+  const t=qt.find(q=>q.text===text);
+  return t?t.val:0;
+}
+
+// Helper: get all tags linked to a goal
+function getTagsForGoal(goalId){
+  const results=[];
+  for(const cat in S.quickTags){
+    S.quickTags[cat].forEach(t=>{
+      if(t.goalIds&&t.goalIds.includes(goalId))results.push({...t,cat});
+    });
+  }
+  return results;
+}
+
+// Helper: get goal trend data from entries (last N days)
+function getGoalTrend(goalId,days){
+  const linkedTags=getTagsForGoal(goalId);
+  if(!linkedTags.length)return null;
+  const tagTexts=new Set(linkedTags.map(t=>t.text));
+  const data=[];
+  const now=new Date();
+  for(let i=days-1;i>=0;i--){
+    const dt=new Date(now);dt.setDate(dt.getDate()-i);
+    const ds=dt.toISOString().slice(0,10);
+    let dayScore=0,count=0;
+    S.entries.filter(e=>e.date===ds).forEach(e=>{
+      e.items.forEach(item=>{
+        (item.tags||[]).forEach(t=>{
+          const txt=typeof t==='string'?t:t.text;
+          const v=typeof t==='object'?t.val:getTagVal(item.cat,txt);
+          if(tagTexts.has(txt)){dayScore+=v;count++;}
+        });
+      });
+    });
+    data.push({date:ds,score:dayScore,count,isToday:i===0});
+  }
+  return data;
 }
 function saveState(){localStorage.setItem('levi_dev',JSON.stringify(S))}
 
@@ -324,7 +487,10 @@ function isReminderDue(g){
   if(!lastNote)return true; // never logged, always due
   const d=daysAgo(lastNote);
   if(g.reminder==='daily')return d>=1;
+  if(g.reminder==='every2days')return d>=2;
+  if(g.reminder==='every3days')return d>=3;
   if(g.reminder==='weekly')return d>=7;
+  if(g.reminder==='biweekly')return d>=14;
   if(g.reminder==='monthly')return d>=30;
   return false;
 }
@@ -525,7 +691,7 @@ function renderDashboard(){
     const tags=cats.map(c=>{const cat=catById(c);return `<span class="log-tag bg-${c}" style="color:${cat.color}">${cat.icon} ${cat.name}</span>`}).join('');
     const itemPreview=e.items.slice(0,3).map(i=>{
       const parts=[];
-      if(i.tags&&i.tags.length)parts.push(i.tags.join(', '));
+      if(i.tags&&i.tags.length)parts.push(i.tags.map(t=>typeof t==='string'?t:t.text).join(', '));
       if(i.text)parts.push(i.text);
       if(i.books&&i.books.length)parts.push('📖 '+i.books.join(', '));
       else if(i.book)parts.push('📖 '+i.book);
@@ -551,7 +717,7 @@ function viewEntry(id){
   if(!e)return;
   const items=e.items.map(i=>{
     const cat=catById(i.cat);
-    const tagHtml=i.tags&&i.tags.length?`<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px">${i.tags.map(t=>`<span style="font-size:10px;background:#1a3a6a;padding:2px 6px;border-radius:4px">${esc(t)}</span>`).join('')}</div>`:'';
+    const tagHtml=i.tags&&i.tags.length?`<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px">${i.tags.map(t=>{const txt=typeof t==='string'?t:t.text;const v=typeof t==='object'?t.val:0;return `<span style="font-size:10px;background:#1a3a6a;padding:2px 6px;border-radius:4px;border:1px solid ${tagValBorder(v)};color:${tagValColor(v)}">${esc(txt)}</span>`}).join('')}</div>`:'';
     return `<div class="card cat-${i.cat}" style="margin-bottom:6px">
       <div style="font-size:11px;font-weight:600;margin-bottom:4px" class="color-${i.cat}">${cat.icon} ${cat.name}</div>
       ${tagHtml}
@@ -601,16 +767,23 @@ function getBookCounts(){
   return Object.entries(counts).sort((a,b)=>b[1]-a[1]);
 }
 
+function tagValColor(v){return v>0?'#69f0ae':v<0?'#ff6b6b':'#5a8abf'}
+function tagValBorder(v){return v>0?'#69f0ae':v<0?'#ff6b6b':'#3a5a8a'}
+
 function buildQuickTags(catId,existingTags){
   const tags=S.quickTags&&S.quickTags[catId]?S.quickTags[catId]:[];
   if(!tags.length)return '';
-  const selected=new Set(existingTags||[]);
+  // existingTags may be strings (old) or objects (new)
+  const selectedTexts=new Set((existingTags||[]).map(t=>typeof t==='string'?t:t.text));
   return `<label>Quick tags</label>
     <div class="chip-row qt-row" data-cat="${catId}">
-      ${tags.map(t=>`<span class="chip ${selected.has(t)?'on':''}" data-tag="${esc(t)}">${esc(t)}</span>`).join('')}
+      ${tags.map(t=>`<span class="chip ${selectedTexts.has(t.text)?'on':''}" data-tag="${esc(t.text)}" data-val="${t.val}" style="border:1.5px solid ${selectedTexts.has(t.text)?tagValBorder(t.val):'#1a3a6a'};color:${tagValColor(t.val)}">${esc(t.text)}</span>`).join('')}
     </div>
     <div style="display:flex;gap:4px;margin-top:4px">
-      <input type="text" class="qt-new" data-cat="${catId}" placeholder="+ custom tag" style="font-size:11px;padding:6px">
+      <input type="text" class="qt-new" data-cat="${catId}" placeholder="+ custom tag" style="font-size:11px;padding:6px;flex:1">
+      <select class="qt-val-pick" data-cat="${catId}" style="font-size:11px;padding:4px;background:#0d1f3a;color:#e8edf5;border:1px solid #1a3a6a;border-radius:6px;width:50px">
+        <option value="1">+</option><option value="0" selected>0</option><option value="-1">−</option>
+      </select>
       <button class="btn btn-sm btn-secondary qt-add-btn" data-cat="${catId}" style="white-space:nowrap">Add</button>
     </div>`;
 }
@@ -683,9 +856,13 @@ function openEntryForm(existing){
     });
   });
 
-  // Quick tag chip toggles (multi-select)
+  // Quick tag chip toggles (multi-select) — update border color on toggle
   document.querySelectorAll('.qt-row .chip').forEach(chip=>{
-    chip.addEventListener('click',()=>chip.classList.toggle('on'));
+    chip.addEventListener('click',()=>{
+      chip.classList.toggle('on');
+      const v=parseInt(chip.dataset.val||'0');
+      chip.style.borderColor=chip.classList.contains('on')?tagValBorder(v):'#1a3a6a';
+    });
   });
 
   // Add custom quick tag buttons
@@ -693,20 +870,27 @@ function openEntryForm(existing){
     btn.addEventListener('click',()=>{
       const cat=btn.dataset.cat;
       const input=document.querySelector(`.qt-new[data-cat="${cat}"]`);
-      const val=input.value.trim();
-      if(!val)return;
+      const valPick=document.querySelector(`.qt-val-pick[data-cat="${cat}"]`);
+      const text=input.value.trim();
+      if(!text)return;
+      const val=parseInt(valPick.value)||0;
       if(!S.quickTags[cat])S.quickTags[cat]=[];
-      if(!S.quickTags[cat].includes(val)){
-        S.quickTags[cat].push(val);
+      if(!S.quickTags[cat].some(t=>t.text===text)){
+        S.quickTags[cat].push({text,val,goalIds:[]});
         saveState();
       }
       // Add chip to row as selected
       const row=document.querySelector(`.qt-row[data-cat="${cat}"]`);
       const newChip=document.createElement('span');
       newChip.className='chip on';
-      newChip.dataset.tag=val;
-      newChip.textContent=val;
-      newChip.addEventListener('click',()=>newChip.classList.toggle('on'));
+      newChip.dataset.tag=text;
+      newChip.dataset.val=val;
+      newChip.textContent=text;
+      newChip.style.cssText=`border:1.5px solid ${tagValBorder(val)};color:${tagValColor(val)}`;
+      newChip.addEventListener('click',()=>{
+        newChip.classList.toggle('on');
+        newChip.style.borderColor=newChip.classList.contains('on')?tagValBorder(val):'#1a3a6a';
+      });
       row.appendChild(newChip);
       input.value='';
       toast('Tag added');
@@ -757,9 +941,9 @@ function openEntryForm(existing){
       const moodRow=document.querySelector(`.rating-row[data-cat="${cat}"]`);
       const moodChip=moodRow?moodRow.querySelector('.chip.on'):null;
       const mood=moodChip?moodChip.dataset.mood:'';
-      // Gather selected quick tags
+      // Gather selected quick tags as {text, val} objects
       const tags=[];
-      document.querySelectorAll(`.qt-row[data-cat="${cat}"] .chip.on`).forEach(tc=>tags.push(tc.dataset.tag));
+      document.querySelectorAll(`.qt-row[data-cat="${cat}"] .chip.on`).forEach(tc=>tags.push({text:tc.dataset.tag,val:parseInt(tc.dataset.val||'0')}));
       if(notes||books.length||mood||tags.length){
         items.push({cat,text:notes,books,mood,tags});
       }
@@ -805,7 +989,7 @@ function renderGoalCard(g,cat){
       <div class="goal-title">${g.flagged?'<span style="color:#4fc3f7">⚑ </span>':''}${esc(g.title)}${due?' <span style="color:#ffd54f;font-size:10px;font-weight:700">● NEEDS UPDATE</span>':''}</div>
       ${!isDone?`<div class="goal-desc">${esc(g.desc)}</div>`:''}
       ${lastNote&&!isDone?`<div class="goal-notes">Latest: ${esc(lastNote.text)} (${fmtDate(lastNote.date)})</div>`:''}
-      ${noteCount&&!isDone?`<div style="font-size:10px;color:#3a5a8a;margin-top:2px">${noteCount} note${noteCount>1?'s':''}${g.reminder&&g.reminder!=='none'?' · remind '+g.reminder:''}</div>`:''}
+      ${noteCount&&!isDone?`<div style="font-size:10px;color:#3a5a8a;margin-top:2px">${noteCount} note${noteCount>1?'s':''}${g.reminder&&g.reminder!=='none'?' · remind '+({daily:'daily',every2days:'every 2 days',every3days:'every 3 days',weekly:'weekly',biweekly:'every 2 weeks',monthly:'monthly'}[g.reminder]||g.reminder):''}</div>`:''}
     </div>
   </div>`;
 }
@@ -909,8 +1093,9 @@ function renderBehaviorInsights(){
 
   // Count tag occurrences in last 30 days
   const tagCounts={};
+  const tagVals={};
   last30.forEach(d=>{
-    d.tags.forEach(t=>{tagCounts[t]=(tagCounts[t]||0)+1});
+    d.tags.forEach(t=>{const txt=typeof t==='string'?t:t.text;const v=typeof t==='object'?t.val:0;tagCounts[txt]=(tagCounts[txt]||0)+1;tagVals[txt]=v});
   });
   const sortedTags=Object.entries(tagCounts).sort((a,b)=>b[1]-a[1]);
 
@@ -923,7 +1108,7 @@ function renderBehaviorInsights(){
     const bars=row.map(x=>{
       const dayNum=new Date(x.date+'T12:00:00').getDate();
       const color=x.mood?moodColors[x.mood]||'#1a3a6a':'#1a3a6a';
-      const tagList=x.tags.length?x.tags.join(', '):'';
+      const tagList=x.tags.length?x.tags.map(t=>typeof t==='string'?t:t.text).join(', '):'';
       const title=x.date+(x.mood?' — '+x.mood:'')+(tagList?' ('+tagList+')':'');
       const isBest=x.mood==='great';
       return `<div style="display:flex;flex-direction:column;align-items:center;gap:1px" title="${esc(title)}">
@@ -943,13 +1128,14 @@ function renderBehaviorInsights(){
   let tagSummary='';
   if(sortedTags.length){
     tagSummary=`<div style="margin-top:10px">
-      <div style="font-size:11px;color:#5a8abf;font-weight:600;margin-bottom:6px">Top issues (last 30 days)</div>
+      <div style="font-size:11px;color:#5a8abf;font-weight:600;margin-bottom:6px">Tag frequency (last 30 days)</div>
       ${sortedTags.map(([tag,count])=>{
         const pct=Math.round(count/30*100);
+        const v=tagVals[tag]||0;
         return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-          <span style="font-size:12px;min-width:120px">${esc(tag)}</span>
+          <span style="font-size:12px;min-width:120px;color:${tagValColor(v)}">${esc(tag)}</span>
           <div style="flex:1;height:6px;background:#1a3a6a;border-radius:3px;overflow:hidden">
-            <div style="width:${pct}%;height:100%;background:#ffd54f;border-radius:3px"></div>
+            <div style="width:${pct}%;height:100%;background:${tagValBorder(v)};border-radius:3px"></div>
           </div>
           <span style="font-size:11px;color:#5a8abf;min-width:20px;text-align:right">${count}</span>
         </div>`;
@@ -1079,15 +1265,13 @@ function renderSelfcareInsights(){
 
   // Tag frequency
   const tagCounts={};
-  last30.forEach(d=>d.tags.forEach(t=>{tagCounts[t]=(tagCounts[t]||0)+1}));
+  const scTagVals={};
+  last30.forEach(d=>d.tags.forEach(t=>{const txt=typeof t==='string'?t:t.text;const v=typeof t==='object'?t.val:getTagVal('selfcare',txt);tagCounts[txt]=(tagCounts[txt]||0)+1;scTagVals[txt]=v}));
   const sortedTags=Object.entries(tagCounts).sort((a,b)=>b[1]-a[1]);
 
-  // Positive vs needs-help tags
-  const positiveTags=new Set(['Wiped well','Dressed self','Brushed teeth well','Washed hands unprompted','Bath/shower independent']);
+  // Positive vs needs-help using tag vals
   let posCount=0,helpCount=0;
-  last30.forEach(d=>d.tags.forEach(t=>{
-    if(positiveTags.has(t))posCount++;else helpCount++;
-  }));
+  last30.forEach(d=>d.tags.forEach(t=>{const v=typeof t==='object'?t.val:getTagVal('selfcare',typeof t==='string'?t:t.text);if(v>0)posCount++;else if(v<0)helpCount++}));
 
   // Build stacked bars — 3 rows of 10
   const barH=48;
@@ -1097,10 +1281,12 @@ function renderSelfcareInsights(){
   const scRowsHtml=scRows.map(row=>{
     const bars=row.map(x=>{
       const dayNum=new Date(x.date+'T12:00:00').getDate();
-      const allPositive=x.logged&&x.tags.length&&x.tags.every(t=>positiveTags.has(t));
-      const hasPositive=x.tags.some(t=>positiveTags.has(t));
+      const tagTexts=x.tags.map(t=>typeof t==='string'?t:t.text);
+      const tagValArr=x.tags.map(t=>typeof t==='object'?t.val:getTagVal('selfcare',typeof t==='string'?t:t.text));
+      const allPositive=x.logged&&tagValArr.length&&tagValArr.every(v=>v>0);
+      const hasPositive=tagValArr.some(v=>v>0);
       const color=x.logged?(hasPositive?'#69f0ae':'#ffd54f'):'#1a3a6a';
-      const title=x.date+(x.tags.length?' — '+x.tags.join(', '):'');
+      const title=x.date+(tagTexts.length?' — '+tagTexts.join(', '):'');
       return `<div style="display:flex;flex-direction:column;align-items:center;gap:1px" title="${esc(title)}">
         <div style="width:100%;height:${barH}px;background:${color};border-radius:4px;display:flex;align-items:center;justify-content:center${x.isToday?';border:2px solid #fff':''}">
           ${allPositive?'<span style="font-size:16px">💪</span>':''}
@@ -1120,11 +1306,11 @@ function renderSelfcareInsights(){
       <div style="font-size:11px;color:#5a8abf;font-weight:600;margin-bottom:6px">Tag frequency (last 30 days)</div>
       ${sortedTags.map(([tag,count])=>{
         const pct=Math.round(count/30*100);
-        const isPos=positiveTags.has(tag);
+        const v=scTagVals[tag]||0;
         return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-          <span style="font-size:12px;min-width:160px">${esc(tag)}</span>
+          <span style="font-size:12px;min-width:160px;color:${tagValColor(v)}">${esc(tag)}</span>
           <div style="flex:1;height:6px;background:#1a3a6a;border-radius:3px;overflow:hidden">
-            <div style="width:${pct}%;height:100%;background:${isPos?'#69f0ae':'#ffd54f'};border-radius:3px"></div>
+            <div style="width:${pct}%;height:100%;background:${tagValBorder(v)};border-radius:3px"></div>
           </div>
           <span style="font-size:11px;color:#5a8abf;min-width:20px;text-align:right">${count}</span>
         </div>`;
@@ -1132,7 +1318,7 @@ function renderSelfcareInsights(){
     </div>`;
   }
 
-  const indepCount=last30.filter(d=>d.logged&&d.tags.length&&d.tags.every(t=>positiveTags.has(t))).length;
+  const indepCount=last30.filter(d=>d.logged&&d.tags.length&&d.tags.every(t=>{const v=typeof t==='object'?t.val:getTagVal('selfcare',typeof t==='string'?t:t.text);return v>0})).length;
   el.innerHTML=`<div class="streak-bar" style="margin-bottom:14px">
     <div class="streak-title" style="display:flex;justify-content:space-between;align-items:center">Last 30 Days — Self-Care <span style="font-size:18px;font-weight:900;color:#69f0ae">💪 ${indepCount}/10</span></div>
     ${scRowsHtml}
@@ -1157,7 +1343,7 @@ function renderHistory(cat){
   }
 
   const histCards=items.map(i=>{
-    const tagHtml=i.tags&&i.tags.length?`<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:3px">${i.tags.map(t=>`<span style="font-size:10px;background:#1a3a6a;padding:2px 6px;border-radius:4px">${esc(t)}</span>`).join('')}</div>`:'';
+    const tagHtml=i.tags&&i.tags.length?`<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:3px">${i.tags.map(t=>{const txt=typeof t==='string'?t:t.text;const v=typeof t==='object'?t.val:0;return `<span style="font-size:10px;background:#1a3a6a;padding:2px 6px;border-radius:4px;border:1px solid ${tagValBorder(v)};color:${tagValColor(v)}">${esc(txt)}</span>`}).join('')}</div>`:'';
     return `<div class="hist-item">
     <div class="hist-date">${fmtDate(i.date)}</div>
     ${tagHtml}
@@ -1185,11 +1371,49 @@ function viewGoal(id){
   const notes=(g.notes||[]).slice().reverse();
 
   const tierLabel=g.tier==='weekly'?'Weekly Focus':'Long-term';
-  const reminderLabel=g.reminder&&g.reminder!=='none'?'Remind '+g.reminder:'No reminder';
+  const reminderNames={daily:'daily',every2days:'every 2 days',every3days:'every 3 days',weekly:'weekly',biweekly:'every 2 weeks',monthly:'monthly'};
+  const reminderLabel=g.reminder&&g.reminder!=='none'?'Remind '+(reminderNames[g.reminder]||g.reminder):'No reminder';
   const due=isReminderDue(g);
+
+  // Auto-trend from linked tags
+  const trend=getGoalTrend(id,30);
+  let trendHtml='';
+  if(trend&&trend.length){
+    const hasData=trend.some(d=>d.count>0);
+    if(hasData){
+      // Build mini bar chart — each day is a thin bar, green up / red down
+      const maxAbs=Math.max(1,...trend.map(d=>Math.abs(d.score)));
+      const barW=Math.floor(260/trend.length);
+      const barsHtml=trend.map(d=>{
+        if(d.score===0)return `<div style="width:${barW}px;height:40px;display:flex;align-items:center"><div style="width:100%;height:1px;background:#1a3a6a"></div></div>`;
+        const h=Math.max(2,Math.round(Math.abs(d.score)/maxAbs*18));
+        const color=d.score>0?'#69f0ae':'#ff6b6b';
+        const top=d.score>0?`padding-top:${20-h}px`:`padding-top:20px`;
+        return `<div style="width:${barW}px;height:40px;display:flex;flex-direction:column;justify-content:center" title="${d.date}: ${d.score>0?'+':''}${d.score}">
+          <div style="height:20px;display:flex;align-items:${d.score>0?'flex-end':'flex-start'}"><div style="width:100%;height:${h}px;background:${color};border-radius:1px"></div></div>
+        </div>`;
+      }).join('');
+      const totalPos=trend.reduce((s,d)=>s+(d.score>0?d.score:0),0);
+      const totalNeg=trend.reduce((s,d)=>s+(d.score<0?d.score:0),0);
+      const net=totalPos+totalNeg;
+      const linkedTags=getTagsForGoal(id);
+      const tagList=linkedTags.map(t=>`<span style="font-size:10px;padding:1px 5px;border-radius:3px;border:1px solid ${tagValBorder(t.val)};color:${tagValColor(t.val)}">${esc(t.text)}</span>`).join(' ');
+      trendHtml=`<div style="background:#0d1f3a;border-radius:8px;padding:10px;margin-bottom:12px">
+        <div style="font-size:11px;color:#5a8abf;font-weight:600;margin-bottom:6px">30-Day Trend from Daily Logs</div>
+        <div style="display:flex;align-items:center;gap:2px;overflow-x:auto">${barsHtml}</div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px">
+          <span style="color:#69f0ae">+${totalPos} positive</span>
+          <span style="color:${net>=0?'#69f0ae':'#ff6b6b'};font-weight:700">Net: ${net>=0?'+':''}${net}</span>
+          <span style="color:#ff6b6b">${totalNeg} negative</span>
+        </div>
+        <div style="margin-top:6px;display:flex;gap:3px;flex-wrap:wrap">${tagList}</div>
+      </div>`;
+    }
+  }
 
   showModal(`<h3 class="color-${g.cat}">${cat.icon} ${esc(g.title)}</h3>
     <div style="font-size:13px;color:#6a9fd8;margin-bottom:8px">${esc(g.desc)}</div>
+    ${trendHtml}
     <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
       <span style="font-size:10px;padding:3px 8px;border-radius:10px;background:#0d1f3a;color:#5a8abf">${tierLabel}</span>
       <span style="font-size:10px;padding:3px 8px;border-radius:10px;background:${due?'#3a2a10':'#252525'};color:${due?'#f39c12':'#888'}">${due?'● ':''} ${reminderLabel}</span>
@@ -1260,7 +1484,10 @@ function addGoal(cat){
     <select id="new-goal-reminder">
       <option value="none">No reminder</option>
       <option value="daily">Daily</option>
+      <option value="every2days">Every 2 days</option>
+      <option value="every3days">Every 3 days</option>
       <option value="weekly">Weekly</option>
+      <option value="biweekly">Every 2 weeks</option>
       <option value="monthly">Monthly</option>
     </select>
     <button class="btn btn-primary btn-block" onclick="saveNewGoal('${cat}')">Save Goal</button>`);
@@ -1293,7 +1520,10 @@ function editGoalPrompt(id){
     <select id="edit-goal-reminder">
       <option value="none" ${g.reminder==='none'?'selected':''}>No reminder</option>
       <option value="daily" ${g.reminder==='daily'?'selected':''}>Daily</option>
+      <option value="every2days" ${g.reminder==='every2days'?'selected':''}>Every 2 days</option>
+      <option value="every3days" ${g.reminder==='every3days'?'selected':''}>Every 3 days</option>
       <option value="weekly" ${g.reminder==='weekly'?'selected':''}>Weekly</option>
+      <option value="biweekly" ${g.reminder==='biweekly'?'selected':''}>Every 2 weeks</option>
       <option value="monthly" ${g.reminder==='monthly'?'selected':''}>Monthly</option>
     </select>
     <button class="btn btn-primary btn-block" onclick="saveEditGoal('${g.id}')">Update</button>`);
