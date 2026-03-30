@@ -165,6 +165,7 @@ textarea{resize:vertical;min-height:60px}
 <div class="io-bar">
   <button class="btn btn-sm btn-secondary" id="btn-export">EXPORT</button>
   <button class="btn btn-sm btn-secondary" id="btn-import">IMPORT</button>
+  <button class="btn btn-sm btn-secondary" id="btn-ideas" style="color:#ffd54f">💡 IDEAS</button>
   <input type="file" id="import-file" accept=".json" style="display:none">
 </div>
 
@@ -251,7 +252,8 @@ let _uid=0;
 function uid(){return Date.now().toString(36)+'_'+(++_uid)}
 function esc(s){if(!s)return '';const d=document.createElement('div');d.textContent=s;return d.innerHTML}
 function toast(msg,err){const t=document.getElementById('toast-el');t.textContent=msg;t.className='toast'+(err?' error':'')+' show';setTimeout(()=>t.className='toast',2500)}
-function today(){return new Date().toISOString().slice(0,10)}
+function localISO(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function today(){return localISO(new Date())}
 function fmtDate(d){if(!d)return '';const dt=new Date(d+'T12:00:00');return dt.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}
 function daysAgo(d){return Math.floor((new Date()-new Date(d+'T12:00:00'))/(86400000))}
 
@@ -464,7 +466,7 @@ function getGoalTrend(goalId,days){
   const now=new Date();
   for(let i=days-1;i>=0;i--){
     const dt=new Date(now);dt.setDate(dt.getDate()-i);
-    const ds=dt.toISOString().slice(0,10);
+    const ds=localISO(dt);
     let dayScore=0,count=0;
     S.entries.filter(e=>e.date===ds).forEach(e=>{
       e.items.forEach(item=>{
@@ -522,7 +524,7 @@ function renderDashboard(){
   let readingScore=0,behaviorScore=0,selfcareScore=0;
   for(let i=29;i>=0;i--){
     const dt=new Date(now30);dt.setDate(dt.getDate()-i);
-    const ds=dt.toISOString().slice(0,10);
+    const ds=localISO(dt);
     S.entries.forEach(e=>{
       if(e.date!==ds)return;
       e.items.forEach(it=>{
@@ -600,9 +602,9 @@ function renderDashboard(){
   const activeGoals=S.goals.filter(g=>g.status==='active').length;
   const completedGoals=S.goals.filter(g=>g.status==='done').length;
   let logStreak=0;
-  {let d=new Date();while(true){const ds=d.toISOString().slice(0,10);if(S.entries.some(e=>e.date===ds)){logStreak++;d.setDate(d.getDate()-1)}else break}}
+  {let d=new Date();while(true){const ds=localISO(d);if(S.entries.some(e=>e.date===ds)){logStreak++;d.setDate(d.getDate()-1)}else break}}
   const last7=new Set();
-  {const now=new Date();for(let i=0;i<7;i++){const dt=new Date(now);dt.setDate(dt.getDate()-i);const ds=dt.toISOString().slice(0,10);S.entries.filter(e=>e.date===ds).forEach(e=>e.items.forEach(it=>last7.add(it.cat)))}}
+  {const now=new Date();for(let i=0;i<7;i++){const dt=new Date(now);dt.setDate(dt.getDate()-i);const ds=localISO(dt);S.entries.filter(e=>e.date===ds).forEach(e=>e.items.forEach(it=>last7.add(it.cat)))}}
 
   document.getElementById('dash-stats').innerHTML=`
     <div class="stat-grid" style="margin-bottom:14px">
@@ -619,7 +621,7 @@ function renderDashboard(){
   S.entries.forEach(e=>{entriesByDate[e.date]=e});
   for(let i=29;i>=0;i--){
     const dt=new Date(now);dt.setDate(dt.getDate()-i);
-    const ds=dt.toISOString().slice(0,10);
+    const ds=localISO(dt);
     const entry=entriesByDate[ds];
     const cats=entry?[...new Set(entry.items.map(it=>it.cat))]:[];
     last30.push({date:ds,cats,entryId:entry?entry.id:null,isToday:i===0});
@@ -1086,7 +1088,7 @@ function renderBehaviorInsights(){
   for(let i=29;i>=0;i--){
     const dt=new Date(now);
     dt.setDate(dt.getDate()-i);
-    const ds=dt.toISOString().slice(0,10);
+    const ds=localISO(dt);
     const entry=behaviorByDate[ds];
     last30.push({date:ds,mood:entry?entry.mood:null,tags:entry?entry.tags:[],isToday:i===0});
   }
@@ -1159,7 +1161,7 @@ function renderReadingInsights(){
   const readingDates=new Set();
   S.entries.forEach(e=>{if(e.items.some(i=>i.cat==='reading'))readingDates.add(e.date)});
   let readStreak=0;
-  {let d=new Date();while(true){const ds=d.toISOString().slice(0,10);if(readingDates.has(ds)){readStreak++;d.setDate(d.getDate()-1)}else break}}
+  {let d=new Date();while(true){const ds=localISO(d);if(readingDates.has(ds)){readStreak++;d.setDate(d.getDate()-1)}else break}}
 
   // Total unique books
   const allBooks=getPastBooks();
@@ -1178,7 +1180,7 @@ function renderReadingInsights(){
   });
   for(let i=29;i>=0;i--){
     const dt=new Date(now);dt.setDate(dt.getDate()-i);
-    const ds=dt.toISOString().slice(0,10);
+    const ds=localISO(dt);
     const bks=booksByDate[ds]||[];
     last30.push({date:ds,count:bks.length,books:bks,isToday:i===0});
   }
@@ -1258,7 +1260,7 @@ function renderSelfcareInsights(){
 
   for(let i=29;i>=0;i--){
     const dt=new Date(now);dt.setDate(dt.getDate()-i);
-    const ds=dt.toISOString().slice(0,10);
+    const ds=localISO(dt);
     const entry=selfcareByDate[ds];
     last30.push({date:ds,tags:entry?entry.tags:[],logged:!!entry,isToday:i===0});
   }
@@ -1590,6 +1592,48 @@ document.getElementById('import-file').addEventListener('change',e=>{
   reader.readAsText(file);
   e.target.value='';
 });
+
+// ── Ideas Notepad ──
+function loadIdeas(){try{return JSON.parse(localStorage.getItem('levi_ideas'))||[]}catch(e){return[]}}
+function saveIdeas(ideas){localStorage.setItem('levi_ideas',JSON.stringify(ideas))}
+
+document.getElementById('btn-ideas').addEventListener('click',()=>{
+  const ideas=loadIdeas();
+  const listHtml=ideas.length?ideas.map((n,i)=>`<div style="display:flex;gap:6px;align-items:flex-start;margin-bottom:8px;background:#0d1f3a;padding:8px;border-radius:6px;border-left:3px solid #ffd54f">
+    <div style="flex:1"><div style="font-size:12px">${esc(n.text)}</div><div style="font-size:10px;color:#3a5a8a;margin-top:2px">${fmtDate(n.date)}</div></div>
+    <button class="btn btn-sm btn-danger" onclick="deleteIdea(${i})" style="padding:2px 6px;font-size:10px">✕</button>
+  </div>`).join(''):'<div style="font-size:12px;color:#3a5a8a;text-align:center;padding:12px">No ideas yet. Jot one down!</div>';
+
+  showModal(`<h3 style="color:#ffd54f">💡 Ideas & Notes</h3>
+    <div style="font-size:11px;color:#5a8abf;margin-bottom:10px">Quick notes for future improvements</div>
+    <div style="display:flex;gap:6px;margin-bottom:12px">
+      <input type="text" id="idea-input" placeholder="Something to improve..." style="flex:1">
+      <button class="btn btn-sm btn-primary" onclick="addIdea()">Add</button>
+    </div>
+    <div id="ideas-list">${listHtml}</div>`);
+
+  document.getElementById('idea-input').addEventListener('keydown',e=>{if(e.key==='Enter')addIdea()});
+});
+
+function addIdea(){
+  const input=document.getElementById('idea-input');
+  const text=input.value.trim();
+  if(!text)return;
+  const ideas=loadIdeas();
+  ideas.unshift({text,date:today()});
+  saveIdeas(ideas);
+  input.value='';
+  document.getElementById('btn-ideas').click();
+  toast('Idea saved');
+}
+
+function deleteIdea(idx){
+  const ideas=loadIdeas();
+  ideas.splice(idx,1);
+  saveIdeas(ideas);
+  document.getElementById('btn-ideas').click();
+  toast('Idea removed');
+}
 
 // ── Init ──
 loadState();
